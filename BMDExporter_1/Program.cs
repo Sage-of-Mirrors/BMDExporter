@@ -556,6 +556,11 @@ namespace BMDExporter_1
             writer.Write((short)-1);
             writer.Write((int)0x84);
 
+            for (int i = 0; i < 29; i++)
+            {
+                writer.Write((int)0);
+            }
+
             Pad32(writer);
 
             // Go back up to the header and write the size
