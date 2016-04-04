@@ -153,7 +153,7 @@ namespace BMDExporter_1
             testWriter.Write(drw1.ToArray());
             testWriter.Write(jnt1.ToArray());
             testWriter.Write(shp1.ToArray());
-
+            testWriter.Write(mat3.ToArray());
             testWriter.Write(tex1.ToArray());
 
             testWriter.BaseStream.Seek(0x8, 0);
@@ -549,7 +549,18 @@ namespace BMDExporter_1
 
         private static void WriteMat3(EndianBinaryWriter writer)
         {
+            // Write MAT3 header
+            writer.Write("MAT3".ToCharArray());
+            writer.Write((int)0);
+            writer.Write((short)m_batches.Count);
+            writer.Write((short)-1);
+            writer.Write((int)0x84);
 
+            Pad32(writer);
+
+            // Go back up to the header and write the size
+            writer.Seek(0x4, 0);
+            writer.Write((int)writer.BaseStream.Length);
         }
 
         private static void WriteTex1(EndianBinaryWriter writer)
