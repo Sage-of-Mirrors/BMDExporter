@@ -26,11 +26,15 @@ namespace BMDExporter_1
         static List<Vector2> m_texCoords = new List<Vector2>();
         static List<Vector3> m_normals = new List<Vector3>();
         static List<AttributeType> m_totalAttribs = new List<AttributeType>() { AttributeType.Position };
+        static List<BinaryTextureImage> m_textures = new List<BinaryTextureImage>();
+
+        static StreamReader m_materialReader = null;
+
         const string padString = "This is padding data to align.";
 
         static void Main(string[] args)
         {
-            using (StreamReader reader = new StreamReader(@"C:\Program Files (x86)\SZS Tools\ktest2_new.obj"))
+            using (StreamReader reader = new StreamReader(@"C:\Program Files (x86)\SZS Tools\TestCube\TestCube.obj"))
             {
                 Batch curBatch = null;
                 Packet curPack = null;
@@ -80,8 +84,18 @@ namespace BMDExporter_1
                             curPack = new Packet();
                             curBatch.SetName(decompLine[1]);
                             break;
+                        case "mtllib":
+                            m_materialReader = new StreamReader(Path.GetDirectoryName(@"C:\Program Files (x86)\SZS Tools\TestCube\TestCube.obj") + @"\" + decompLine[1]);
+                            break;
                         case "usemtl":
-                            curBatch.SetMaterial(new Material());
+                            if (m_materialReader == null)
+                            {
+                                Console.Write("Material reader was null!");
+                                continue;
+                            }
+
+                            curBatch.SetMaterial(new Material(decompLine[1], m_materialReader));
+                            m_textures.Add(curBatch.Material.Texture);
                             break;
                     }
                 }
@@ -120,6 +134,10 @@ namespace BMDExporter_1
             MemoryStream shp1 = new MemoryStream();
             EndianBinaryWriter shp1Writer = new EndianBinaryWriter(shp1, Endian.Big);
             WriteShp1(shp1Writer);
+
+            MemoryStream mat3 = new MemoryStream();
+            EndianBinaryWriter mat3Writer = new EndianBinaryWriter(mat3, Endian.Big);
+            WriteMat3(mat3Writer);
 
             MemoryStream tex1 = new MemoryStream();
             EndianBinaryWriter tex1Writer = new EndianBinaryWriter(tex1, Endian.Big);
@@ -529,19 +547,77 @@ namespace BMDExporter_1
             writer.Write((int)writer.BaseStream.Length);
         }
 
+        private static void WriteMat3(EndianBinaryWriter writer)
+        {
+
+        }
+
         private static void WriteTex1(EndianBinaryWriter writer)
         {
+            // Write TEX1 header
             writer.Write("TEX1".ToCharArray());
+            writer.Write((int)0);
+            writer.Write((short)m_textures.Count);
+            writer.Write((short)-1);
             writer.Write((int)0x20);
-            writer.Write((short)0);
+            writer.Write((int)0);
+
+            Pad32(writer);
+
+            // Write BTIHeaders
+            foreach (BinaryTextureImage tex in m_textures)
+                tex.WriteHeader(writer);
+
+            int imageDataOffset = (int)writer.BaseStream.Length - 0x20;
+
+            // Write image data offsets and image data
+            for (int i = 0; i < m_textures.Count; i++)
+            {
+                // 0x20 is the TEX1 header size, 0x0C is the offset to paletteDataOffset,
+                // i * 0x20 is the current header
+                writer.Seek(0x20 + 0x0C + (i * 0x20), 0);
+                writer.Write((int)(imageDataOffset - (i* 20)));
+
+                // 0x20 is the TEX1 header size, 0x1C is the offset to the imageDataOffset,
+                // i * 0x20 is the current header
+                writer.Seek(0x20 + 0x1C + (i * 0x20), 0);
+                writer.Write((int)writer.BaseStream.Length - 0x20);
+
+                // Write actual data
+                writer.Seek((int)writer.BaseStream.Length, 0);
+                writer.Write(m_textures[i].GetData());
+            }
+
+            writer.Seek(0x10, 0);
+            writer.Write((int)writer.BaseStream.Length);
+            writer.Seek((int)writer.BaseStream.Length, 0);
+
+            // Write string table
+            writer.Write((short)m_textures.Count);
             writer.Write((short)-1);
 
-            for (int i = 0; i < 16; i++)
+            short stringOffset = (short)(4 + ((m_textures.Count) * 4));
+
+            // Hash and string offset
+            foreach (BinaryTextureImage tex in m_textures)
             {
+                writer.Write((short)HashName(tex.Name));
+                writer.Write(stringOffset);
+
+                stringOffset += (short)(tex.Name.Length + 1);
+            }
+
+            // String data with null terminators
+            foreach (BinaryTextureImage tex in m_textures)
+            {
+                writer.Write(tex.Name.ToCharArray());
                 writer.Write((byte)0);
             }
 
             Pad32(writer);
+
+            writer.Seek(4, 0);
+            writer.Write((int)writer.BaseStream.Length);
         }
 
         private static ushort HashName(string name)

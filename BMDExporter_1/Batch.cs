@@ -43,7 +43,7 @@ namespace BMDExporter_1
     {
         string m_name;
         Bone m_bone;
-        Material m_material;
+        public Material Material;
         BoundingBox m_boundingBox;
 
         List<Packet> m_packets;
@@ -87,7 +87,7 @@ namespace BMDExporter_1
 
         public void SetMaterial(Material mat)
         {
-            m_material = mat;
+            Material = mat;
         }
 
         public void CreateBone()

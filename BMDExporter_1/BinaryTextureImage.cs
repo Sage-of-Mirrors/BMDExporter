@@ -111,6 +111,7 @@ namespace BMDExporter_1
         }
         #endregion
 
+        public string Name { get; private set; }
         public TextureFormats Format { get; private set; }
         public byte AlphaSetting { get; private set; } // 0 for no alpha, 0x02 and other values seem to indicate yes alpha.
         public ushort Width { get; private set; }
@@ -129,6 +130,29 @@ namespace BMDExporter_1
 
         private Palette m_imagePalette;
         private byte[] m_rgbaImageData;
+
+        public BinaryTextureImage(string name, Bitmap bmp)
+        {
+            Name = name;
+            Format = TextureFormats.RGBA32;
+            AlphaSetting = 0;
+            Width = (ushort)bmp.Width;
+            Height = (ushort)bmp.Height;
+            WrapS = WrapModes.Repeat;
+            WrapT = WrapModes.Repeat;
+            PaletteFormat = PaletteFormats.IA8;
+            PaletteCount = 0;
+            BorderColor = new Color32(0, 0, 0, 0);
+            MinFilter = FilterMode.Linear;
+            MagFilter = FilterMode.Linear;
+            MinLOD = 0;
+            MagLOD = 0;
+            MipMapCount = 1;
+            LodBias = 0;
+
+            m_imagePalette = null;
+            m_rgbaImageData = BinaryTextureImage.EncodeData(bmp, Width, Height, TextureFormats.RGBA32);
+        }
 
         // headerStart seems to be chunkStart + 0x20 and I don't know why.
         public void Load(EndianBinaryReader stream, long headerStart, int imageIndex = 0)
@@ -184,6 +208,46 @@ namespace BMDExporter_1
         public byte[] GetData()
         {
             return m_rgbaImageData;
+        }
+
+        public void WriteHeader(EndianBinaryWriter writer)
+        {
+            writer.Write((byte)Format);
+            writer.Write(AlphaSetting);
+            writer.Write(Width);
+            writer.Write(Height);
+            writer.Write((byte)WrapS);
+            writer.Write((byte)WrapT);
+
+            // This is an unknown
+            writer.Write((byte)0);
+
+            writer.Write((byte)PaletteFormat);
+            writer.Write((short)PaletteCount);
+
+            // This is a placeholder for PaletteDataOffset
+            writer.Write((int)0);
+
+            writer.Write((byte)BorderColor.R);
+            writer.Write((byte)BorderColor.G);
+            writer.Write((byte)BorderColor.B);
+            writer.Write((byte)BorderColor.A);
+
+            writer.Write((byte)MinFilter);
+            writer.Write((byte)MagFilter);
+
+            // This is an unknown
+            writer.Write((short)0);
+
+            writer.Write((byte)MipMapCount);
+
+            // This is an unknown
+            writer.Write((byte)0);
+
+            writer.Write((short)LodBias);
+
+            // This is a placeholder for ImageDataOffset
+            writer.Write((int)0);
         }
 
         #region Decoding
