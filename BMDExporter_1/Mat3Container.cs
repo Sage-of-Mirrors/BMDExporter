@@ -78,6 +78,24 @@ namespace BMDExporter_1
         /// </summary>
         private List<TevSwapModeTable> m_swapTableBlock;
         /// <summary>
+        /// A list of all the unique fog settings used by the materials.
+        /// </summary>
+        private List<Fog> m_fogBlock;
+        /// <summary>
+        /// A list of all the unique alpha compare settings used by the materials.
+        /// </summary>
+        private List<AlphaCompare> m_alphaCompBlock;
+        /// <summary>
+        ///  A list of all the unique blend modes used by the materials.
+        /// </summary>
+        private List<BlendMode> m_blendModeBlock;
+        // A list of all the Zmodes used by the materials.
+        private List<ZMode> m_zModeBlock;
+        // A list of all the unique ZCompLocs used by the materials.
+        private List<bool> m_zCompLocBlock;
+        // A list of all the unique Dithers used by the materials.
+        private List<bool> m_ditherBlock;
+        /// <summary>
         /// A list of all the materials within the model.
         /// </summary>
         public List<Material> Materials;
@@ -101,6 +119,12 @@ namespace BMDExporter_1
             m_tevStageBlock = new List<TevStage>();
             m_swapModeBlock = new List<TevSwapMode>();
             m_swapTableBlock = new List<TevSwapModeTable>();
+            m_fogBlock = new List<Fog>();
+            m_alphaCompBlock = new List<AlphaCompare>();
+            m_blendModeBlock = new List<BlendMode>();
+            m_zModeBlock = new List<ZMode>();
+            m_zCompLocBlock = new List<bool>();
+            m_ditherBlock = new List<bool>();
 
             Materials = new List<Material>();
         }
@@ -236,6 +260,36 @@ namespace BMDExporter_1
 
             foreach (TevSwapModeTable table in m_swapTableBlock)
                 table.Write(writer);
+
+            // Write fog offset in header here
+
+            foreach (Fog fg in m_fogBlock)
+                fg.Write(writer);
+
+            // Write alpha compare offset in header here
+
+            foreach (AlphaCompare alph in m_alphaCompBlock)
+                alph.Write(writer);
+
+            // Write blend mode offset in header here
+
+            foreach (BlendMode mode in m_blendModeBlock)
+                mode.Write(writer);
+
+            // Write z mode offset in header here
+
+            foreach (ZMode mode in m_zModeBlock)
+                mode.Write(writer);
+
+            // Write z comp loc offset in header here
+
+            foreach (bool bol in m_zCompLocBlock)
+                writer.Write(bol);
+
+            // Write dither offset in header here
+
+            foreach (bool bol in m_ditherBlock)
+                writer.Write(bol);
         }
 
         /// <summary>
@@ -339,6 +393,24 @@ namespace BMDExporter_1
                     if ((mat.SwapTables[i] != null) && (!m_swapTableBlock.Contains(mat.SwapTables[i])))
                         m_swapTableBlock.Add(mat.SwapTables[i]);
                 }
+                // Fog
+                if (!m_fogBlock.Contains(mat.FogInfo))
+                    m_fogBlock.Add(mat.FogInfo);
+                // Alpha compare
+                if (!m_alphaCompBlock.Contains(mat.AlphCompare))
+                    m_alphaCompBlock.Add(mat.AlphCompare);
+                // Blend mode
+                if (!m_blendModeBlock.Contains(mat.BMode))
+                    m_blendModeBlock.Add(mat.BMode);
+                // Z mode
+                if (!m_zModeBlock.Contains(mat.ZMode))
+                    m_zModeBlock.Add(mat.ZMode);
+                // Z comp loc
+                if (!m_zCompLocBlock.Contains(mat.ZCompLoc))
+                    m_zCompLocBlock.Add(mat.ZCompLoc);
+                // Dither
+                if (!m_ditherBlock.Contains(mat.Dither))
+                    m_ditherBlock.Add(mat.Dither);
             }
         }
 
@@ -360,8 +432,11 @@ namespace BMDExporter_1
             // NumTexGens
             // NumTevStages
             // ZCompLoc
+            writer.Write((byte)m_zCompLocBlock.IndexOf(mat.ZCompLoc));
             // ZMode
+            writer.Write((byte)m_zModeBlock.IndexOf(mat.ZMode));
             // Dither
+            writer.Write((byte)m_ditherBlock.IndexOf(mat.Dither));
             // Material color
             for (int i = 0; i < 2; i++)
             {
@@ -489,8 +564,11 @@ namespace BMDExporter_1
                 writer.Write((short)0);
             }
             // FogIndex
+            writer.Write((short)m_fogBlock.IndexOf(mat.FogInfo));
             // AlphaCompare
+            writer.Write((short)m_alphaCompBlock.IndexOf(mat.AlphCompare));
             // BlendMode
+            writer.Write((short)m_blendModeBlock.IndexOf(mat.BMode));
             // Unknown1
             writer.Write((short)0);
         }

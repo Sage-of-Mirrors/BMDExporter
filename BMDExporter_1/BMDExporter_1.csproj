@@ -50,12 +50,15 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AlphaCompare.cs" />
     <Compile Include="Batch.cs" />
     <Compile Include="BinaryTextureImage.cs" />
+    <Compile Include="BlendMode.cs" />
     <Compile Include="Bone.cs" />
     <Compile Include="BoundingBox.cs" />
     <Compile Include="ChannelControl.cs" />
     <Compile Include="Color.cs" />
+    <Compile Include="Fog.cs" />
     <Compile Include="GXEnums.cs" />
     <Compile Include="IndirectTexturing.cs" />
     <Compile Include="IndTevOrder.cs" />
@@ -73,6 +76,7 @@
     <Compile Include="TexCoordGen.cs" />
     <Compile Include="TexMatrix.cs" />
     <Compile Include="TGA.cs" />
+    <Compile Include="ZMode.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

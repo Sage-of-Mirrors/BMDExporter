@@ -31,6 +31,12 @@ namespace BMDExporter_1
         public TevStage[] TevStages;
         public TevSwapMode[] SwapModes;
         public TevSwapModeTable[] SwapTables;
+        public Fog FogInfo;
+        public AlphaCompare AlphCompare;
+        public BlendMode BMode;
+        public ZMode ZMode;
+        public bool ZCompLoc;
+        public bool Dither;
 
         public Material()
         {
@@ -60,6 +66,10 @@ namespace BMDExporter_1
             TevStages = new TevStage[16];
             SwapModes = new TevSwapMode[16];
             SwapTables = new TevSwapModeTable[4];
+            FogInfo = new Fog();
+            AlphCompare = new AlphaCompare();
+            BMode = new BlendMode();
+            ZMode = new ZMode();
         }
     }
 }
