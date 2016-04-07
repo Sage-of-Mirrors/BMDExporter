@@ -54,10 +54,24 @@
     <Compile Include="BinaryTextureImage.cs" />
     <Compile Include="Bone.cs" />
     <Compile Include="BoundingBox.cs" />
+    <Compile Include="ChannelControl.cs" />
+    <Compile Include="Color.cs" />
+    <Compile Include="GXEnums.cs" />
+    <Compile Include="IndirectTexturing.cs" />
+    <Compile Include="IndTevOrder.cs" />
+    <Compile Include="IndTexMatrix.cs" />
+    <Compile Include="IndTexScale.cs" />
+    <Compile Include="Mat3Container.cs" />
     <Compile Include="Material.cs" />
     <Compile Include="Packet.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="TevOrder.cs" />
+    <Compile Include="TevStage.cs" />
+    <Compile Include="TevSwapMode.cs" />
+    <Compile Include="TevSwapModeTables.cs" />
+    <Compile Include="TexCoordGen.cs" />
+    <Compile Include="TexMatrix.cs" />
     <Compile Include="TGA.cs" />
   </ItemGroup>
   <ItemGroup>

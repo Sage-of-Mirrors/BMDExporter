@@ -34,6 +34,10 @@ namespace BMDExporter_1
 
         static void Main(string[] args)
         {
+            Mat3Container cont = new Mat3Container();
+            Material mat = new Material();
+            cont.Materials.Add(mat);
+            cont.WriteMat3(new EndianBinaryWriter(new MemoryStream(), Endian.Big));
             using (StreamReader reader = new StreamReader(@"C:\Program Files (x86)\SZS Tools\TestCube\TestCube.obj"))
             {
                 Batch curBatch = null;
@@ -94,8 +98,8 @@ namespace BMDExporter_1
                                 continue;
                             }
 
-                            curBatch.SetMaterial(new Material(decompLine[1], m_materialReader));
-                            m_textures.Add(curBatch.Material.Texture);
+                            //curBatch.SetMaterial(new Material(decompLine[1], m_materialReader));
+                            //m_textures.Add(curBatch.Material.Texture);
                             break;
                     }
                 }

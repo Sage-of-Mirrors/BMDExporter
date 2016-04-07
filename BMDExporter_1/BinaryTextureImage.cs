@@ -937,7 +937,7 @@ namespace BMDExporter_1
                             int srcXPixel = (xBlocks * 8) + pX;
                             int srcYPixel = (yBlocks * 8) + pY;
 
-                            Color pixelColor = bmp.GetPixel(srcXPixel, srcYPixel);
+                            System.Drawing.Color pixelColor = bmp.GetPixel(srcXPixel, srcYPixel);
                             byte pixelIntensity = (byte)(pixelColor.R / 0x11);
 
                             // We haven't packed the first byte into the output byte, so this would be the left shifted
@@ -982,7 +982,7 @@ namespace BMDExporter_1
                             int srcXPixel = (xBlock * 4) + pX;
                             int srcYPixel = (yBlock * 4) + pY;
 
-                            Color pixelColor = bmp.GetPixel(srcXPixel, srcYPixel);
+                            System.Drawing.Color pixelColor = bmp.GetPixel(srcXPixel, srcYPixel);
 
                             encodedImage.Add(pixelColor.A);
                             encodedImage.Add(pixelColor.R);
@@ -997,7 +997,7 @@ namespace BMDExporter_1
                             int srcXPixel = (xBlock * 4) + pX;
                             int srcYPixel = (yBlock * 4) + pY;
 
-                            Color pixelColor = bmp.GetPixel(srcXPixel, srcYPixel);
+                            System.Drawing.Color pixelColor = bmp.GetPixel(srcXPixel, srcYPixel);
 
                             encodedImage.Add(pixelColor.G);
                             encodedImage.Add(pixelColor.B);
