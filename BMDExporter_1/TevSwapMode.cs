@@ -24,5 +24,49 @@ namespace BMDExporter_1
             // Pad to 4 bytes
             writer.Write((short)-1);
         }
+
+        public override bool Equals(object obj)
+        {
+            if (obj.GetType() == typeof(TevSwapMode))
+                return Compare((TevSwapMode)obj);
+            else
+                return false;
+        }
+
+        private bool Compare(TevSwapMode obj)
+        {
+            if (RasSel == obj.RasSel && TexSel == obj.TexSel)
+                return true;
+            else
+                return false;
+        }
+
+        public static bool operator ==(TevSwapMode left, TevSwapMode right)
+        {
+            if (System.Object.ReferenceEquals(left, right))
+                return true;
+
+            if (((object)left == null) || ((object)right == null))
+                return false;
+
+            if (left.RasSel == right.RasSel && left.TexSel == right.TexSel)
+                return true;
+            else
+                return false;
+        }
+
+        public static bool operator !=(TevSwapMode left, TevSwapMode right)
+        {
+            if (System.Object.ReferenceEquals(left, right))
+                return false;
+
+            if (((object)left == null) || ((object)right == null))
+                return true;
+
+            if (left.RasSel == right.RasSel && left.TexSel == right.TexSel)
+                return false;
+            else
+                return true;
+        }
     }
 }

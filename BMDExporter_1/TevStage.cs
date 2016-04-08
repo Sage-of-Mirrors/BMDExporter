@@ -26,6 +26,8 @@ namespace BMDExporter_1
 
         public TevStage()
         {
+            Unknown0 = 0xFF;
+            Unknown1 = 0xFF;
             ColorIn = new GXCombineColorInput[4];
             AlphaIn = new GXCombineAlphaInput[4];
         }
@@ -44,12 +46,60 @@ namespace BMDExporter_1
                 writer.Write((byte)AlphaIn[i]);
             writer.Write((byte)AlphaOp);
             writer.Write((byte)AlphaBias);
+            writer.Write((byte)AlphaScale);
             writer.Write(AlphaClamp);
             writer.Write(AlphaRegId);
             writer.Write(Unknown1);
+        }
 
-            // Pad to ? bytes
-            writer.Write((short)-1);
+        public override bool Equals(object obj)
+        {
+            if (obj.GetType() == typeof(TevStage))
+                return Compare((TevStage)obj);
+            else
+                return false;
+        }
+
+        private bool Compare(TevStage obj)
+        {
+            if (Unknown0 == obj.Unknown0 && ColorIn == obj.ColorIn && ColorOp == obj.ColorOp && ColorBias == obj.ColorBias
+                && ColorScale == obj.ColorScale && ColorRegId == obj.ColorRegId && AlphaIn == obj.AlphaIn && AlphaOp == obj.AlphaOp
+                && AlphaBias == obj.AlphaBias && AlphaClamp == obj.AlphaClamp && AlphaRegId == obj.AlphaRegId && Unknown1 == obj.Unknown1)
+                return true;
+            else
+                return false;
+        }
+
+        public static bool operator ==(TevStage left, TevStage right)
+        {
+            if (System.Object.ReferenceEquals(left, right))
+                return true;
+
+            if (((object)left == null) || ((object)right == null))
+                return false;
+
+            if (left.Unknown0 == right.Unknown0 && left.ColorIn == right.ColorIn && left.ColorOp == right.ColorOp && left.ColorBias == right.ColorBias
+                && left.ColorScale == right.ColorScale && left.ColorRegId == right.ColorRegId && left.AlphaIn == right.AlphaIn && left.AlphaOp == right.AlphaOp
+                && left.AlphaBias == right.AlphaBias && left.AlphaClamp == right.AlphaClamp && left.AlphaRegId == right.AlphaRegId && left.Unknown1 == right.Unknown1)
+                return true;
+            else
+                return false;
+        }
+
+        public static bool operator !=(TevStage left, TevStage right)
+        {
+            if (System.Object.ReferenceEquals(left, right))
+                return false;
+
+            if (((object)left == null) || ((object)right == null))
+                return true;
+
+            if (left.Unknown0 == right.Unknown0 && left.ColorIn == right.ColorIn && left.ColorOp == right.ColorOp && left.ColorBias == right.ColorBias
+                && left.ColorScale == right.ColorScale && left.ColorRegId == right.ColorRegId && left.AlphaIn == right.AlphaIn && left.AlphaOp == right.AlphaOp
+                && left.AlphaBias == right.AlphaBias && left.AlphaClamp == right.AlphaClamp && left.AlphaRegId == right.AlphaRegId && left.Unknown1 == right.Unknown1)
+                return false;
+            else
+                return true;
         }
     }
 }

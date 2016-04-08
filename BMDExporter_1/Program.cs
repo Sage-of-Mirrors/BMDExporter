@@ -32,12 +32,10 @@ namespace BMDExporter_1
 
         const string padString = "This is padding data to align.";
 
+        static Mat3Container MatContainer = new Mat3Container();
+
         static void Main(string[] args)
         {
-            Mat3Container cont = new Mat3Container();
-            Material mat = new Material();
-            cont.Materials.Add(mat);
-            cont.WriteMat3(new EndianBinaryWriter(new MemoryStream(), Endian.Big));
             using (StreamReader reader = new StreamReader(@"C:\Program Files (x86)\SZS Tools\TestCube\TestCube.obj"))
             {
                 Batch curBatch = null;
@@ -98,8 +96,13 @@ namespace BMDExporter_1
                                 continue;
                             }
 
-                            //curBatch.SetMaterial(new Material(decompLine[1], m_materialReader));
-                            //m_textures.Add(curBatch.Material.Texture);
+                            curBatch.SetMaterial(new Material(decompLine[1], m_materialReader, Path.GetDirectoryName(@"C:\Program Files (x86)\SZS Tools\TestCube\TestCube.obj")));
+                            MatContainer.Materials.Add(curBatch.Material);
+                            for (int i = 0; i < 8; i++)
+                            {
+                                if (curBatch.Material.Textures[i] != null)
+                                    m_textures.Add(curBatch.Material.Textures[i]);
+                            }
                             break;
                     }
                 }
@@ -147,7 +150,7 @@ namespace BMDExporter_1
             EndianBinaryWriter tex1Writer = new EndianBinaryWriter(tex1, Endian.Big);
             WriteTex1(tex1Writer);
 
-            FileStream testJnt = new FileStream(@"C:\Program Files (x86)\SZS Tools\jnt1test", FileMode.Create);
+            FileStream testJnt = new FileStream(@"C:\Program Files (x86)\SZS Tools\mattest.bmd", FileMode.Create);
             EndianBinaryWriter testWriter = new EndianBinaryWriter(testJnt, Endian.Big);
 
             WriteHeader(testWriter);
@@ -553,23 +556,7 @@ namespace BMDExporter_1
 
         private static void WriteMat3(EndianBinaryWriter writer)
         {
-            // Write MAT3 header
-            writer.Write("MAT3".ToCharArray());
-            writer.Write((int)0);
-            writer.Write((short)m_batches.Count);
-            writer.Write((short)-1);
-            writer.Write((int)0x84);
-
-            for (int i = 0; i < 29; i++)
-            {
-                writer.Write((int)0);
-            }
-
-            Pad32(writer);
-
-            // Go back up to the header and write the size
-            writer.Seek(0x4, 0);
-            writer.Write((int)writer.BaseStream.Length);
+            MatContainer.WriteMat3(writer);
         }
 
         private static void WriteTex1(EndianBinaryWriter writer)

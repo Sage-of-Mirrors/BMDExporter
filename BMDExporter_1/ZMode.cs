@@ -33,5 +33,51 @@ namespace BMDExporter_1
             // Pad entry to 4 bytes
             writer.Write((byte)0xFF);
         }
+
+        public override bool Equals(object obj)
+        {
+            if (obj.GetType() == typeof(ZMode))
+                return Compare((ZMode)obj);
+            else
+                return false;
+        }
+
+        private bool Compare(ZMode obj)
+        {
+            if (Enable == obj.Enable && Function == obj.Function && UpdateEnable == obj.UpdateEnable)
+                return true;
+            else
+                return false;
+        }
+
+        public static bool operator ==(ZMode left, ZMode right)
+        {
+            if (System.Object.ReferenceEquals(left, right))
+                return true;
+
+            if (((object)left == null) || ((object)right == null))
+                return false;
+
+            if (left.Enable == right.Enable && left.Function == right.Function && left.UpdateEnable == right.UpdateEnable)
+                return true;
+
+            else
+                return false;
+        }
+
+        public static bool operator !=(ZMode left, ZMode right)
+        {
+            if (System.Object.ReferenceEquals(left, right))
+                return false;
+
+            if (((object)left == null) || ((object)right == null))
+                return true;
+
+            if (left.Enable == right.Enable && left.Function == right.Function && left.UpdateEnable == right.UpdateEnable)
+                return false;
+
+            else
+                return true;
+        }
     }
 }

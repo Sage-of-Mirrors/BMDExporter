@@ -37,5 +37,52 @@ namespace BMDExporter_1
             writer.Write((byte)0xFF);
             writer.Write((byte)0xFF);
         }
+
+        public override bool Equals(object obj)
+        {
+            if (obj.GetType() == typeof(AlphaCompare))
+                return Compare((AlphaCompare)obj);
+            else
+                return false;
+        }
+
+        private bool Compare(AlphaCompare obj)
+        {
+            if (Comp0 == obj.Comp0 && Reference0 == obj.Reference0 && Operation == obj.Operation
+                && Comp1 == obj.Comp1 && Reference1 == obj.Reference1)
+                return true;
+            else
+                return false;
+        }
+
+        public static bool operator ==(AlphaCompare left, AlphaCompare right)
+        {
+            if (System.Object.ReferenceEquals(left, right))
+                return true;
+
+            if (((object)left == null) || ((object)right == null))
+                return false;
+
+            if (left.Comp0 == right.Comp0 && left.Reference0 == right.Reference0 && left.Operation == right.Operation
+                && left.Comp1 == right.Comp1 && left.Reference1 == right.Reference1)
+                return true;
+            else
+                return false;
+        }
+
+        public static bool operator !=(AlphaCompare left, AlphaCompare right)
+        {
+            if (System.Object.ReferenceEquals(left, right))
+                return false;
+
+            if (((object)left == null) || ((object)right == null))
+                return true;
+
+            if (left.Comp0 == right.Comp0 && left.Reference0 == right.Reference0 && left.Operation == right.Operation
+                && left.Comp1 == right.Comp1 && left.Reference1 == right.Reference1)
+                return false;
+            else
+                return true;
+        }
     }
 }

@@ -1009,6 +1009,49 @@ namespace BMDExporter_1
             return encodedImage.ToArray();
         }
         #endregion
+
+        public override bool Equals(object obj)
+        {
+            if (obj.GetType() == typeof(BinaryTextureImage))
+                return Compare((BinaryTextureImage)obj);
+            else return false;
+        }
+
+        private bool Compare(BinaryTextureImage obj)
+        {
+            if (m_rgbaImageData == obj.m_rgbaImageData)
+                return true;
+            else
+                return false;
+        }
+
+        public static bool operator ==(BinaryTextureImage left, BinaryTextureImage right)
+        {
+            if (System.Object.ReferenceEquals(left, right))
+                return true;
+
+            if (((object)left == null) || ((object)right == null))
+                return false;
+
+            if (left.m_rgbaImageData == right.m_rgbaImageData)
+                return true;
+            else
+                return false;
+        }
+
+        public static bool operator !=(BinaryTextureImage left, BinaryTextureImage right)
+        {
+            if (System.Object.ReferenceEquals(left, right))
+                return false;
+
+            if (((object)left == null) || ((object)right == null))
+                return true;
+
+            if (left.m_rgbaImageData == right.m_rgbaImageData)
+                return false;
+            else
+                return true;
+        }
     }
 
     public struct Color32

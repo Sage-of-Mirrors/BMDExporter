@@ -46,6 +46,12 @@ namespace BMDExporter_1
 
         public static bool operator ==(TevOrder left, TevOrder right)
         {
+            if (System.Object.ReferenceEquals(left, right))
+                return true;
+
+            if (((object)left == null) || ((object)right == null))
+                return false;
+
             if ((left.TexCoordId == right.TexCoordId) && (left.TexMap == right.TexMap) && (left.ChannelId == right.ChannelId))
                 return true;
             else
@@ -54,6 +60,12 @@ namespace BMDExporter_1
 
         public static bool operator !=(TevOrder left, TevOrder right)
         {
+            if (System.Object.ReferenceEquals(left, right))
+                return false;
+
+            if (((object)left == null) || ((object)right == null))
+                return true;
+
             if ((left.TexCoordId == right.TexCoordId) && (left.TexMap == right.TexMap) && (left.ChannelId == right.ChannelId))
                 return false;
             else

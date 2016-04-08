@@ -69,6 +69,12 @@ namespace BMDExporter_1
 
         public static bool operator ==(ChannelControl left, ChannelControl right)
         {
+            if (System.Object.ReferenceEquals(left, right))
+                return true;
+
+            if (((object)left == null) || ((object)right == null))
+                return false;
+
             if ((left.Enable == right.Enable) && (left.MaterialSrcColor == right.MaterialSrcColor)
                 && (left.LitMask == right.LitMask) && (left.DiffuseFunction == right.DiffuseFunction)
                 && (left.AttenuationFunction == right.AttenuationFunction) && (left.AmbientSrcColor == right.AmbientSrcColor))
@@ -79,6 +85,12 @@ namespace BMDExporter_1
 
         public static bool operator !=(ChannelControl left, ChannelControl right)
         {
+            if (System.Object.ReferenceEquals(left, right))
+                return false;
+
+            if (((object)left == null) || ((object)right == null))
+                return true;
+
             if ((left.Enable == right.Enable) && (left.MaterialSrcColor == right.MaterialSrcColor)
                 && (left.LitMask == right.LitMask) && (left.DiffuseFunction == right.DiffuseFunction)
                 && (left.AttenuationFunction == right.AttenuationFunction) && (left.AmbientSrcColor == right.AmbientSrcColor))

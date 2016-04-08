@@ -54,6 +54,12 @@ namespace BMDExporter_1
 
         public static bool operator ==(IndTexScale left, IndTexScale right)
         {
+            if (System.Object.ReferenceEquals(left, right))
+                return true;
+
+            if (((object)left == null) || ((object)right == null))
+                return false;
+
             if((left.ScaleS == right.ScaleS) && (left.ScaleT == right.ScaleT))
                 return true;
             else
@@ -62,6 +68,12 @@ namespace BMDExporter_1
 
         public static bool operator !=(IndTexScale left, IndTexScale right)
         {
+            if (System.Object.ReferenceEquals(left, right))
+                return false;
+
+            if (((object)left == null) || ((object)right == null))
+                return true;
+
             if ((left.ScaleS == right.ScaleS) && (left.ScaleT == right.ScaleT))
                 return false;
             else

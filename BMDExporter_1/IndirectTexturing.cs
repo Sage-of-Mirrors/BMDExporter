@@ -96,6 +96,12 @@ namespace BMDExporter_1
 
         public static bool operator == (IndirectTexturing left, IndirectTexturing right)
         {
+            if (System.Object.ReferenceEquals(left, right))
+                return true;
+
+            if (((object)left == null) || ((object)right == null))
+                return false;
+
             if ((left.HasLookup == right.HasLookup) && (left.IndTexStageNum == right.IndTexStageNum)
                 && (left.Unknown1 == right.Unknown1) && (left.Unknown2 == right.Unknown2) && (left.Matrices == right.Matrices)
                 && (left.Scales == right.Scales) && (left.TevOrders == right.TevOrders))
@@ -106,6 +112,12 @@ namespace BMDExporter_1
 
         public static bool operator !=(IndirectTexturing left, IndirectTexturing right)
         {
+            if (System.Object.ReferenceEquals(left, right))
+                return false;
+
+            if (((object)left == null) || ((object)right == null))
+                return true;
+
             if ((left.HasLookup == right.HasLookup) && (left.IndTexStageNum == right.IndTexStageNum)
                 && (left.Unknown1 == right.Unknown1) && (left.Unknown2 == right.Unknown2) && (left.Matrices == right.Matrices)
                 && (left.Scales == right.Scales) && (left.TevOrders == right.TevOrders))

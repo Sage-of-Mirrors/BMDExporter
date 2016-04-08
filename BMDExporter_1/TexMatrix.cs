@@ -24,7 +24,17 @@ namespace BMDExporter_1
 
         public TexMatrix()
         {
+            Projection = 1;
+            CenterS = .5f;
+            CenterT = .5f;
 
+            ScaleS = 1.0f;
+            ScaleT = 1.0f;
+
+            PreMatrix.Column0 = new Vector4(1, 0, 0, 0);
+            PreMatrix.Column1 = new Vector4(0, 1, 0, 0);
+            PreMatrix.Column2 = new Vector4(0, 0, 1, 0);
+            PreMatrix.Column3 = new Vector4(0, 0, 0, 1);
         }
 
         public void Write(EndianBinaryWriter writer)

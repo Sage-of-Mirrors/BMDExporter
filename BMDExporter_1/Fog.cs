@@ -40,5 +40,52 @@ namespace BMDExporter_1
             for (int i = 0; i < 10; i++)
                 writer.Write(Table[i]);
         }
+
+        public override bool Equals(object obj)
+        {
+            if (obj.GetType() == typeof(Fog))
+                return Compare((Fog)obj);
+            else
+                return false;
+        }
+
+        private bool Compare(Fog obj)
+        {
+            if (Type == obj.Type && Enable == obj.Enable && Center == obj.Center && StartZ == obj.StartZ
+                && EndZ == obj.EndZ && NearZ == obj.NearZ && FarZ == obj.FarZ && Color == obj.Color && Table == obj.Table)
+                return true;
+            else
+                return false;
+        }
+
+        public static bool operator ==(Fog left, Fog right)
+        {
+            if (System.Object.ReferenceEquals(left, right))
+                return true;
+
+            if (((object)left == null) || ((object)right == null))
+                return false;
+
+            if (left.Type == right.Type && left.Enable == right.Enable && left.Center == right.Center && left.StartZ == right.StartZ
+                && left.EndZ == right.EndZ && left.NearZ == right.NearZ && left.FarZ == right.FarZ && left.Color == right.Color && left.Table == right.Table)
+                return true;
+            else
+                return false;
+        }
+
+        public static bool operator !=(Fog left, Fog right)
+        {
+            if (System.Object.ReferenceEquals(left, right))
+                return false;
+
+            if (((object)left == null) || ((object)right == null))
+                return true;
+
+            if (left.Type == right.Type && left.Enable == right.Enable && left.Center == right.Center && left.StartZ == right.StartZ
+                && left.EndZ == right.EndZ && left.NearZ == right.NearZ && left.FarZ == right.FarZ && left.Color == right.Color && left.Table == right.Table)
+                return false;
+            else
+                return true;
+        }
     }
 }

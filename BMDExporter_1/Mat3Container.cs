@@ -9,6 +9,7 @@ namespace BMDExporter_1
 {
     class Mat3Container
     {
+        const string padString = "This is padding data to align.p";
         /// <summary>
         /// A list of all the unique indirect texturing entries within the model.
         /// </summary>
@@ -128,170 +129,299 @@ namespace BMDExporter_1
 
             Materials = new List<Material>();
         }
-
+        /// <summary>
+        /// Writes the MAT3 section to the specified stream.
+        /// </summary>
+        /// <param name="writer">Stream to write to.</param>
         public void WriteMat3(EndianBinaryWriter writer)
         {
             PopulateBlockLists();
 
-            // Write header here
+            // Write header
+            WriteHeader(writer);
 
+            // Write materials
             foreach (Material mat in Materials)
                 WriteMaterialIndexes(writer, mat);
 
-            // Write string table here
+            // Write index offset
+            WriteOffset(writer, 0x10);
 
-            // Write indirect texturing offset in header here
+            // Write material indexes
+            for (int i = 0; i < Materials.Count; i++)
+                writer.Write((short)i);
+
+            // Write string table offset
+            WriteOffset(writer, 0x14);
+
+            // Write string table
+            WriteStringTable(writer);
+
+            Pad32(writer);
+
+            // Write indirect texturing offset
+            WriteOffset(writer, 0x18);
 
             // Write indirect texturing block
             foreach (IndirectTexturing ind in m_indirectTexBlock)
                 ind.Write(writer);
 
-            // Write cull mode offset in header here
+            // Write cull mode offset
+            WriteOffset(writer, 0x1C);
 
             // Write cull mode block
             foreach (GXCullMode cull in m_cullModeBlock)
                 writer.Write((int)cull);
 
-            // Write material colors offset in header here
+            //Pad32(writer);
+
+            // Write material colors offset
+            WriteOffset(writer, 0x20);
 
             // Write material color block
             foreach (Color col in m_materialColorBlock)
                 WriteColor(writer, col);
 
-            // Write number of channel controls offset in header here
+            //Pad32(writer);
+
+            // Write number of channel controls offset
+            WriteOffset(writer, 0x24);
 
             // This is a hack for writing numChanCtrls until more information is collected about it
             writer.Write((byte)1);
 
             writer.Write("Thi".ToCharArray());
 
-            // Write channel control data offset in header here
+            // Write channel control data offset
+            WriteOffset(writer, 0x28);
+
+            // Write channel control block
             foreach (ChannelControl chan in m_channelControlBlock)
                 chan.Write(writer);
 
-            // Write ambient colors offset in header here
+            //Pad32(writer);
+
+            // Write ambient colors offset
+            WriteOffset(writer, 0x2C);
 
             //Write ambient color block
             foreach (Color col in m_ambientColorBlock)
                 WriteColor(writer, col);
 
-            // Write lighting colors offset in header here
+            //Pad32(writer);
+
+            // Write lighting colors offset
+            WriteOffset(writer, 0x30);
 
             // Write lighting color block
             foreach (Color col in m_lightingColorBlock)
                 WriteColor(writer, col);
 
+            //Pad32(writer);
+
+            // Write numTexCoord1Gen offset
+            WriteOffset(writer, 0x34);
+
+            writer.Write((byte)1);
+            writer.Write("Thi".ToCharArray());
+
             // Write tex coord 1 gen block
             if (m_texCoord1GenBlock.Count != 0)
             {
-                // Write numTexCoord1Gen offset in header here
+                // Write TexCoord1Gen offset
+                WriteOffset(writer, 0x38);
 
-                // Write numTexCoord1Gen
-
-                // Write TexCoord1Gen offset in header here
-
+                // Write tex coord gens 1 block
                 foreach (TexCoordGen gen in m_texCoord1GenBlock)
                     gen.Write(writer);
+
+                //Pad32(writer);
             }
 
             // Write tex coord 2 gen block
             if (m_texCoord2GenBlock.Count != 0)
             {
-                // Write numTexCoord2Gen offset in header here
+                // Write numTexCoord2Gen offset
+                //WriteOffset(writer, 0x3C);
 
                 // Write numTexCoord2Gen
 
-                // Write TexCoord2Gen offset in header here
+                // Write TexCoord2Gen offset
+                WriteOffset(writer, 0x3C);
 
+                // Write tex coord gens 2 block
                 foreach (TexCoordGen gen in m_texCoord2GenBlock)
                     gen.Write(writer);
+
+                //Pad32(writer);
             }
 
             if (m_texMatrix1Block.Count != 0)
             {
-                // Write tex matrix 1 offset in header here
+                // Write tex matrix 1 offset
+                WriteOffset(writer, 0x40);
 
+                // Write tex matrix 1 block
                 foreach (TexMatrix mat in m_texMatrix1Block)
                     mat.Write(writer);
+
+               // Pad32(writer);
             }
 
-            if (m_texMatrix1Block.Count != 0)
+            if (m_texMatrix2Block.Count != 0)
             {
-                // Write tex matrix 2 offset in header here
+                // Write tex matrix 2 offset
+                WriteOffset(writer, 0x44);
 
+                // Write tex matrix 2 block
                 foreach (TexMatrix mat in m_texMatrix2Block)
                     mat.Write(writer);
+
+                //Pad32(writer);
             }
 
-            // Write texture index offset in header here
+            // Write texture index offset
+            WriteOffset(writer, 0x48);
 
+            // Write texture index block
             for (int i = 0; i < m_textureBlock.Count; i++)
                 writer.Write((short)i);
 
-            // Write tev order offset in header here
+            //Pad32(writer);
 
+            // Write tev order offset
+            WriteOffset(writer, 0x4C);
+
+            // Write tev order block
             foreach (TevOrder order in m_tevOrderBlock)
                 order.Write(writer);
 
-            // Write tev color offset in header here
+            //Pad32(writer);
 
+            // Write tev color offset
+            WriteOffset(writer, 0x50);
+
+            // Write tev color block
             foreach (Color col in m_tevColorBlock)
                 WriteColor(writer, col);
 
-            // Write tev konst color offset in header here
+            //Pad32(writer);
 
+            // Write tev konst color offset
+            WriteOffset(writer, 0x54);
+
+            // Write konst color block
             foreach (Color col in m_tevKonstColorBlock)
                 WriteColor(writer, col);
+
+            //Pad32(writer);
             
             // Write num tev stage offset in header here
-            // Write num tev stage here
+            WriteOffset(writer, 0x58);
 
-            // Write tev stage offset in header here
+            // This is a hack for writing numTevStages until more information is collected about it
+            writer.Write((byte)1);
 
+            writer.Write("Thi".ToCharArray());
+
+            // Write tev stage offset
+            WriteOffset(writer, 0x5C);
+
+            // Write tev stage block
             foreach (TevStage stage in m_tevStageBlock)
                 stage.Write(writer);
 
-            // Write swap mode offset in header here
+            //Pad32(writer);
 
+            // Write swap mode offset
+            WriteOffset(writer, 0x60);
+
+            // Write tev swap mode block
             foreach (TevSwapMode mode in m_swapModeBlock)
                 mode.Write(writer);
 
-            // Write swap table offset in header here
+            //Pad32(writer);
 
+            // Write swap table offset
+            WriteOffset(writer, 0x64);
+
+            // Write tev swap table block
             foreach (TevSwapModeTable table in m_swapTableBlock)
                 table.Write(writer);
 
-            // Write fog offset in header here
+            //Pad32(writer);
 
+            // Write fog offset
+            WriteOffset(writer, 0x68);
+
+            // Write fog block
             foreach (Fog fg in m_fogBlock)
                 fg.Write(writer);
 
-            // Write alpha compare offset in header here
+            //Pad32(writer);
 
+            // Write alpha compare offset
+            WriteOffset(writer, 0x6C);
+
+            // Write alpha compare block
             foreach (AlphaCompare alph in m_alphaCompBlock)
                 alph.Write(writer);
 
-            // Write blend mode offset in header here
+            //Pad32(writer);
 
+            // Write blend mode offset
+            WriteOffset(writer, 0x70);
+
+            // Write blend mode block
             foreach (BlendMode mode in m_blendModeBlock)
                 mode.Write(writer);
 
-            // Write z mode offset in header here
+            //Pad32(writer);
 
+            // Write z mode offset
+            WriteOffset(writer, 0x74);
+
+            // Write zmode block
             foreach (ZMode mode in m_zModeBlock)
                 mode.Write(writer);
 
-            // Write z comp loc offset in header here
+            //Pad32(writer);
 
+            // Write z comp loc offset
+            WriteOffset(writer, 0x78);
+
+            // Write zcomploc block
             foreach (bool bol in m_zCompLocBlock)
                 writer.Write(bol);
 
-            // Write dither offset in header here
+            for (int i = 0; i < 4 - m_zCompLocBlock.Count; i++)
+            {
+                writer.Write(padString[i]);
+            }
 
+            // Write dither offset
+            WriteOffset(writer, 0x7C);
+
+            // Write dither block
             foreach (bool bol in m_ditherBlock)
                 writer.Write(bol);
-        }
 
+            for (int i = 0; i < 4 - m_ditherBlock.Count; i++)
+            {
+                writer.Write(padString[i]);
+            }
+
+            WriteOffset(writer, 0x80);
+
+            NBTScale test = new NBTScale();
+
+            test.Write(writer);
+
+            Pad32(writer);
+
+            // Write section size
+            WriteOffset(writer, 0x4);
+        }
         /// <summary>
         /// Pulls all of the unique fields from each material into lists for easy indexing and output.
         /// </summary>
@@ -299,10 +429,11 @@ namespace BMDExporter_1
         {
             foreach (Material mat in Materials)
             {
-                if (!m_indirectTexBlock.Contains(mat.IndTexEntry))
-                    m_indirectTexBlock.Add(mat.IndTexEntry);
+                m_indirectTexBlock.Add(mat.IndTexEntry);
+
                 if (!m_cullModeBlock.Contains(mat.CullMode))
                     m_cullModeBlock.Add(mat.CullMode);
+
                 // Material colors
                 for (int i = 0; i < 2; i++)
                 {
@@ -340,13 +471,13 @@ namespace BMDExporter_1
                         m_texCoord2GenBlock.Add(mat.TexCoord2Gens[gen]);
                 }
                 // Texture matrices 1
-                for (int tex = 0; tex < 8; tex++)
+                for (int tex = 0; tex < 10; tex++)
                 {
                     if ((mat.TexMatrix1[tex] != null) && (!m_texMatrix1Block.Contains(mat.TexMatrix1[tex])))
                         m_texMatrix1Block.Add(mat.TexMatrix1[tex]);
                 }
                 // Texture matrices 2
-                for (int tex = 0; tex < 22; tex++)
+                for (int tex = 0; tex < 20; tex++)
                 {
                     if ((mat.TexMatrix2[tex] != null) && (!m_texMatrix2Block.Contains(mat.TexMatrix2[tex])))
                         m_texMatrix2Block.Add(mat.TexMatrix2[tex]);
@@ -366,13 +497,13 @@ namespace BMDExporter_1
                 // Tev colors
                 for (int i = 0; i < 4; i++)
                 {
-                    if (m_tevColorBlock.Contains(mat.TevColors[i]))
+                    if (!m_tevColorBlock.Contains(mat.TevColors[i]))
                         m_tevColorBlock.Add(mat.TevColors[i]);
                 }
                 // Tev konst colors
                 for (int i = 0; i < 4; i++)
                 {
-                    if (m_tevKonstColorBlock.Contains(mat.KonstColors[i]))
+                    if (!m_tevKonstColorBlock.Contains(mat.KonstColors[i]))
                         m_tevKonstColorBlock.Add(mat.KonstColors[i]);
                 }
                 // Tev stages
@@ -413,8 +544,9 @@ namespace BMDExporter_1
                     m_ditherBlock.Add(mat.Dither);
             }
         }
-
-        // Outputs the specified color to the specified stream.
+        /// <summary>
+        /// Outputs the specified color to the specified stream.
+        /// </summary>
         private void WriteColor(EndianBinaryWriter writer, Color col)
         {
             writer.Write((byte)(col.R * 255f));
@@ -422,6 +554,9 @@ namespace BMDExporter_1
             writer.Write((byte)(col.B * 255f));
             writer.Write((byte)(col.A * 255f));
         }
+        /// <summary>
+        /// Outputs the specified material to the stream.
+        /// </summary>
         private void WriteMaterialIndexes(EndianBinaryWriter writer, Material mat)
         {
             // Flag
@@ -429,8 +564,11 @@ namespace BMDExporter_1
             // Cull mode
             writer.Write((byte)m_cullModeBlock.IndexOf(mat.CullMode));
             // NumChannelControls
+            writer.Write((byte)0);
             // NumTexGens
+            writer.Write((byte)0);
             // NumTevStages
+            writer.Write((byte)0);
             // ZCompLoc
             writer.Write((byte)m_zCompLocBlock.IndexOf(mat.ZCompLoc));
             // ZMode
@@ -571,6 +709,103 @@ namespace BMDExporter_1
             writer.Write((short)m_blendModeBlock.IndexOf(mat.BMode));
             // Unknown1
             writer.Write((short)0);
+        }
+        /// <summary>
+        /// Outputs the MAT3 header to the stream.
+        /// </summary>
+        private void WriteHeader(EndianBinaryWriter writer)
+        {
+            // Tag
+            writer.Write("MAT3".ToCharArray());
+            // Placeholder for section size
+            writer.Write((int)0);
+            // Material count
+            writer.Write((short)Materials.Count);
+            //Padding
+            writer.Write((short)-1);
+            // Material offset
+            writer.Write((int)0x84);
+            // Placeholder offets for the rest of the data
+            for (int i = 0; i < 29; i++)
+            {
+                writer.Write((int)0);
+            }
+        }
+        /// <summary>
+        /// Outputs the material string table to the stream.
+        /// </summary>
+        private void WriteStringTable(EndianBinaryWriter writer)
+        {
+            // String count
+            writer.Write((short)Materials.Count);
+            // Pad to 4 bytes
+            writer.Write((short)-1);
+
+            short nameOffset = (short)(4 + (Materials.Count * 4));
+
+            foreach (Material mat in Materials)
+            {
+                writer.Write((short)HashName(mat.Name));
+                writer.Write(nameOffset);
+                nameOffset += (short)(mat.Name.Length + 1);
+            }
+
+            foreach (Material mat in Materials)
+            {
+                writer.Write(mat.Name.ToCharArray());
+                writer.Write((byte)0);
+            }
+        }
+        /// <summary>
+        /// Writes the current length of the specified stream to the specified offset and returns the stream to the
+        /// end.
+        /// </summary>
+        /// <param name="writer">Stream to write to.</param>
+        /// <param name="offset">Offset to write to.</param>
+        private void WriteOffset(EndianBinaryWriter writer, int offset)
+        {
+            writer.BaseStream.Seek(offset, 0);
+            writer.Write((int)writer.BaseStream.Length);
+            writer.BaseStream.Seek(writer.BaseStream.Length, 0);
+        }
+
+        private static ushort HashName(string name)
+        {
+            short hash = 0;
+
+            short multiplier = 1;
+
+            if (name.Length + 1 == 2)
+            {
+                multiplier = 2;
+            }
+
+            if (name.Length + 1 >= 3)
+            {
+                multiplier = 3;
+            }
+
+            foreach (char c in name)
+            {
+                hash = (short)(hash * multiplier);
+                hash += (short)c;
+            }
+
+            return (ushort)hash;
+        }
+
+        private static void Pad32(EndianBinaryWriter writer)
+        {
+            // Pad up to a 4 byte alignment
+            // Formula: (x + (n-1)) & ~(n-1)
+            long nextAligned = (writer.BaseStream.Length + 0x1F) & ~0x1F;
+
+            long delta = nextAligned - writer.BaseStream.Length;
+            writer.BaseStream.Position = writer.BaseStream.Length;
+            for (int i = 0; i < delta; i++)
+            {
+                writer.Write(padString[i]);
+            }
         }
     }
 }

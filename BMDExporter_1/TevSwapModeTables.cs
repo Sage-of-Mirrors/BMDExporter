@@ -26,5 +26,49 @@ namespace BMDExporter_1
             writer.Write(B);
             writer.Write(A);
         }
+
+        public override bool Equals(object obj)
+        {
+            if (obj.GetType() == typeof(TevSwapModeTable))
+                return Compare((TevSwapModeTable)obj);
+            else
+                return false;
+        }
+
+        private bool Compare(TevSwapModeTable obj)
+        {
+            if (R == obj.R && G == obj.G && B == obj.B && A == obj.A)
+                return true;
+            else
+                return false;
+        }
+
+        public static bool operator ==(TevSwapModeTable left, TevSwapModeTable right)
+        {
+            if (System.Object.ReferenceEquals(left, right))
+                return true;
+
+            if (((object)left == null) || ((object)right == null))
+                return false;
+
+            if (left.R == right.R && left.G == right.G && left.B == right.B && left.A == right.A)
+                return true;
+            else
+                return false;
+        }
+
+        public static bool operator !=(TevSwapModeTable left, TevSwapModeTable right)
+        {
+            if (System.Object.ReferenceEquals(left, right))
+                return false;
+
+            if (((object)left == null) || ((object)right == null))
+                return true;
+
+            if (left.R == right.R && left.G == right.G && left.B == right.B && left.A == right.A)
+                return false;
+            else
+                return true;
+        }
     }
 }

@@ -33,5 +33,52 @@ namespace BMDExporter_1
             writer.Write((byte)DestinationFact);
             writer.Write((byte)Operation);
         }
+
+        public override bool Equals(object obj)
+        {
+            if (obj.GetType() == typeof(BlendMode))
+                return Compare((BlendMode)obj);
+            else
+                return false;
+        }
+
+        private bool Compare(BlendMode obj)
+        {
+            if (Type == obj.Type && SourceFact == obj.SourceFact && DestinationFact == obj.DestinationFact
+                && Operation == obj.Operation)
+                return true;
+            else
+                return false;
+        }
+
+        public static bool operator ==(BlendMode left, BlendMode right)
+        {
+            if (System.Object.ReferenceEquals(left, right))
+                return true;
+
+            if (((object)left == null) || ((object)right == null))
+                return false;
+
+            if (left.Type == right.Type && left.SourceFact == right.SourceFact && left.DestinationFact == right.DestinationFact
+                && left.Operation == right.Operation)
+                return true;
+            else
+                return false;
+        }
+
+        public static bool operator !=(BlendMode left, BlendMode right)
+        {
+            if (System.Object.ReferenceEquals(left, right))
+                return false;
+
+            if (((object)left == null) || ((object)right == null))
+                return true;
+
+            if (left.Type == right.Type && left.SourceFact == right.SourceFact && left.DestinationFact == right.DestinationFact
+                && left.Operation == right.Operation)
+                return false;
+            else
+                return true;
+        }
     }
 }

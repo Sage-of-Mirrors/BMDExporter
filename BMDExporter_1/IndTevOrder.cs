@@ -73,6 +73,12 @@ namespace BMDExporter_1
 
         public static bool operator ==(IndTevOrder left, IndTevOrder right)
         {
+            if (System.Object.ReferenceEquals(left, right))
+                return true;
+
+            if (((object)left == null) || ((object)right == null))
+                return false;
+
             if ((left.TevStageID == right.TevStageID) && (left.IndTexFormat == right.IndTexFormat)
                 && (left.IndTexBiasSel == right.IndTexBiasSel) && (left.IndTexMtxId == right.IndTexMtxId)
                 && (left.IndTexWrapS == right.IndTexWrapS) && (left.IndTexWrapT == right.IndTexWrapT)
@@ -84,6 +90,12 @@ namespace BMDExporter_1
 
         public static bool operator !=(IndTevOrder left, IndTevOrder right)
         {
+            if (System.Object.ReferenceEquals(left, right))
+                return false;
+
+            if (((object)left == null) || ((object)right == null))
+                return true;
+
             if ((left.TevStageID == right.TevStageID) && (left.IndTexFormat == right.IndTexFormat)
                 && (left.IndTexBiasSel == right.IndTexBiasSel) && (left.IndTexMtxId == right.IndTexMtxId)
                 && (left.IndTexWrapS == right.IndTexWrapS) && (left.IndTexWrapT == right.IndTexWrapT)

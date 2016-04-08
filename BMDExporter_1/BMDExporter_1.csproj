@@ -66,6 +66,7 @@
     <Compile Include="IndTexScale.cs" />
     <Compile Include="Mat3Container.cs" />
     <Compile Include="Material.cs" />
+    <Compile Include="NBTScale.cs" />
     <Compile Include="Packet.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

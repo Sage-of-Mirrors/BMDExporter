@@ -63,6 +63,12 @@ namespace BMDExporter_1
 
         public static bool operator == (IndTexMatrix left, IndTexMatrix right)
         {
+            if (System.Object.ReferenceEquals(left, right))
+                return true;
+
+            if (((object)left == null) || ((object)right == null))
+                return false;
+
             if ((left.Matrix == right.Matrix) && (left.Exponent == right.Exponent))
                 return true;
             else
@@ -71,6 +77,12 @@ namespace BMDExporter_1
 
         public static bool operator != (IndTexMatrix left, IndTexMatrix right)
         {
+            if (System.Object.ReferenceEquals(left, right))
+                return false;
+
+            if (((object)left == null) || ((object)right == null))
+                return true;
+
             if ((left.Matrix == right.Matrix) && (left.Exponent == right.Exponent))
                 return false;
             else
