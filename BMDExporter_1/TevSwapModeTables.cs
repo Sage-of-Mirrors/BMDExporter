@@ -19,6 +19,14 @@ namespace BMDExporter_1
 
         }
 
+        public TevSwapModeTable(byte r, byte g, byte b, byte a)
+        {
+            R = r;
+            G = g;
+            B = b;
+            A = a;
+        }
+
         public void Write(EndianBinaryWriter writer)
         {
             writer.Write(R);

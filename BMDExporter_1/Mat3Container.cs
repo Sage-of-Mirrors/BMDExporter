@@ -21,7 +21,7 @@ namespace BMDExporter_1
         /// <summary>
         /// A list of all the unique material colors used by the materials.
         /// </summary>
-        private List<Color> m_materialColorBlock;
+        private List<Color?> m_materialColorBlock;
         /// <summary>
         /// A list of all the unique channel controls used by the materials.
         /// </summary>
@@ -29,7 +29,7 @@ namespace BMDExporter_1
         /// <summary>
         /// A list of all the unique material colors used by the materials.
         /// </summary>
-        private List<Color> m_ambientColorBlock;
+        private List<Color?> m_ambientColorBlock;
         /// <summary>
         /// A list of all the unique material colors used by the materials.
         /// </summary>
@@ -61,11 +61,11 @@ namespace BMDExporter_1
         /// <summary>
         /// A list of all the unique TEV colors used by the materials.
         /// </summary>
-        private List<Color> m_tevColorBlock;
+        private List<Color?> m_tevColorBlock;
         /// <summary>
         /// A list of all the unique TEV konst colors used by the materials.
         /// </summary>
-        private List<Color> m_tevKonstColorBlock;
+        private List<Color?> m_tevKonstColorBlock;
         /// <summary>
         /// A list of all the unique TEV stage configs used by the materials.
         /// </summary>
@@ -105,9 +105,9 @@ namespace BMDExporter_1
         {
             m_indirectTexBlock = new List<IndirectTexturing>();
             m_cullModeBlock = new List<GXCullMode>();
-            m_materialColorBlock = new List<Color>();
+            m_materialColorBlock = new List<Color?>();
             m_channelControlBlock = new List<ChannelControl>();
-            m_ambientColorBlock = new List<Color>();
+            m_ambientColorBlock = new List<Color?>();
             m_lightingColorBlock = new List<Color?>();
             m_texCoord1GenBlock = new List<TexCoordGen>();
             m_texCoord2GenBlock = new List<TexCoordGen>();
@@ -115,8 +115,8 @@ namespace BMDExporter_1
             m_texMatrix2Block = new List<TexMatrix>();
             m_textureBlock = new List<BinaryTextureImage>();
             m_tevOrderBlock = new List<TevOrder>();
-            m_tevColorBlock = new List<Color>();
-            m_tevKonstColorBlock = new List<Color>();
+            m_tevColorBlock = new List<Color?>();
+            m_tevKonstColorBlock = new List<Color?>();
             m_tevStageBlock = new List<TevStage>();
             m_swapModeBlock = new List<TevSwapMode>();
             m_swapTableBlock = new List<TevSwapModeTable>();
@@ -166,21 +166,28 @@ namespace BMDExporter_1
             foreach (IndirectTexturing ind in m_indirectTexBlock)
                 ind.Write(writer);
 
-            // Write cull mode offset
-            WriteOffset(writer, 0x1C);
+            if (m_cullModeBlock.Count != 0)
+            {
+                // Write cull mode offset
+                WriteOffset(writer, 0x1C);
 
-            // Write cull mode block
-            foreach (GXCullMode cull in m_cullModeBlock)
-                writer.Write((int)cull);
+                // Write cull mode block
+                foreach (GXCullMode cull in m_cullModeBlock)
+                    writer.Write((int)cull);
+            }
+
 
             //Pad32(writer);
 
-            // Write material colors offset
-            WriteOffset(writer, 0x20);
+            if (m_materialColorBlock.Count != 0)
+            {
+                // Write material colors offset
+                WriteOffset(writer, 0x20);
 
-            // Write material color block
-            foreach (Color col in m_materialColorBlock)
-                WriteColor(writer, col);
+                // Write material color block
+                foreach (Color col in m_materialColorBlock)
+                    WriteColor(writer, col);
+            }
 
             //Pad32(writer);
 
@@ -192,30 +199,40 @@ namespace BMDExporter_1
 
             writer.Write("Thi".ToCharArray());
 
-            // Write channel control data offset
-            WriteOffset(writer, 0x28);
+            if (m_channelControlBlock.Count != 0)
+            {
+                // Write channel control data offset
+                WriteOffset(writer, 0x28);
 
-            // Write channel control block
-            foreach (ChannelControl chan in m_channelControlBlock)
-                chan.Write(writer);
+                // Write channel control block
+                foreach (ChannelControl chan in m_channelControlBlock)
+                    chan.Write(writer);
+            }
 
             //Pad32(writer);
 
-            // Write ambient colors offset
-            WriteOffset(writer, 0x2C);
+            if (m_ambientColorBlock.Count != 0)
+            {
+                // Write ambient colors offset
+                WriteOffset(writer, 0x2C);
 
-            //Write ambient color block
-            foreach (Color col in m_ambientColorBlock)
-                WriteColor(writer, col);
+                //Write ambient color block
+                foreach (Color col in m_ambientColorBlock)
+                    WriteColor(writer, col);
+            }
 
             //Pad32(writer);
 
             // Write lighting colors offset
+            // Writing this here because for whatever reason the game prefers to have an offset rather than 0
             WriteOffset(writer, 0x30);
 
-            // Write lighting color block
-            foreach (Color col in m_lightingColorBlock)
-                WriteColor(writer, col);
+            if (m_lightingColorBlock.Count != 0)
+            {
+                // Write lighting color block
+                foreach (Color col in m_lightingColorBlock)
+                    WriteColor(writer, col);
+            }
 
             //Pad32(writer);
 
@@ -280,39 +297,51 @@ namespace BMDExporter_1
                 //Pad32(writer);
             }
 
-            // Write texture index offset
-            WriteOffset(writer, 0x48);
+            if (m_textureBlock.Count != 0)
+            {
+                // Write texture index offset
+                WriteOffset(writer, 0x48);
 
-            // Write texture index block
-            for (int i = 0; i < m_textureBlock.Count; i++)
-                writer.Write((short)i);
+                // Write texture index block
+                for (int i = 0; i < m_textureBlock.Count; i++)
+                    writer.Write((short)i);
+            }
 
-            //Pad32(writer);
+            Pad32(writer);
 
-            // Write tev order offset
-            WriteOffset(writer, 0x4C);
+            if (m_tevOrderBlock.Count != 0)
+            {
+                // Write tev order offset
+                WriteOffset(writer, 0x4C);
 
-            // Write tev order block
-            foreach (TevOrder order in m_tevOrderBlock)
-                order.Write(writer);
-
-            //Pad32(writer);
-
-            // Write tev color offset
-            WriteOffset(writer, 0x50);
-
-            // Write tev color block
-            foreach (Color col in m_tevColorBlock)
-                WriteColor(writer, col);
+                // Write tev order block
+                foreach (TevOrder order in m_tevOrderBlock)
+                    order.Write(writer);
+            }
 
             //Pad32(writer);
 
-            // Write tev konst color offset
-            WriteOffset(writer, 0x54);
+            if (m_tevColorBlock.Count != 0)
+            {
+                // Write tev color offset
+                WriteOffset(writer, 0x50);
 
-            // Write konst color block
-            foreach (Color col in m_tevKonstColorBlock)
-                WriteColor(writer, col);
+                // Write tev color block
+                foreach (Color col in m_tevColorBlock)
+                    WriteShortColor(writer, col);
+            }
+
+            //Pad32(writer);
+
+            if (m_tevKonstColorBlock.Count != 0)
+            {
+                // Write tev konst color offset
+                WriteOffset(writer, 0x54);
+
+                // Write konst color block
+                foreach (Color col in m_tevKonstColorBlock)
+                    WriteColor(writer, col);
+            }
 
             //Pad32(writer);
             
@@ -320,95 +349,122 @@ namespace BMDExporter_1
             WriteOffset(writer, 0x58);
 
             // This is a hack for writing numTevStages until more information is collected about it
-            writer.Write((byte)1);
+            writer.Write((byte)2);
 
             writer.Write("Thi".ToCharArray());
 
-            // Write tev stage offset
-            WriteOffset(writer, 0x5C);
-
-            // Write tev stage block
-            foreach (TevStage stage in m_tevStageBlock)
-                stage.Write(writer);
-
-            //Pad32(writer);
-
-            // Write swap mode offset
-            WriteOffset(writer, 0x60);
-
-            // Write tev swap mode block
-            foreach (TevSwapMode mode in m_swapModeBlock)
-                mode.Write(writer);
-
-            //Pad32(writer);
-
-            // Write swap table offset
-            WriteOffset(writer, 0x64);
-
-            // Write tev swap table block
-            foreach (TevSwapModeTable table in m_swapTableBlock)
-                table.Write(writer);
-
-            //Pad32(writer);
-
-            // Write fog offset
-            WriteOffset(writer, 0x68);
-
-            // Write fog block
-            foreach (Fog fg in m_fogBlock)
-                fg.Write(writer);
-
-            //Pad32(writer);
-
-            // Write alpha compare offset
-            WriteOffset(writer, 0x6C);
-
-            // Write alpha compare block
-            foreach (AlphaCompare alph in m_alphaCompBlock)
-                alph.Write(writer);
-
-            //Pad32(writer);
-
-            // Write blend mode offset
-            WriteOffset(writer, 0x70);
-
-            // Write blend mode block
-            foreach (BlendMode mode in m_blendModeBlock)
-                mode.Write(writer);
-
-            //Pad32(writer);
-
-            // Write z mode offset
-            WriteOffset(writer, 0x74);
-
-            // Write zmode block
-            foreach (ZMode mode in m_zModeBlock)
-                mode.Write(writer);
-
-            //Pad32(writer);
-
-            // Write z comp loc offset
-            WriteOffset(writer, 0x78);
-
-            // Write zcomploc block
-            foreach (bool bol in m_zCompLocBlock)
-                writer.Write(bol);
-
-            for (int i = 0; i < 4 - m_zCompLocBlock.Count; i++)
+            if (m_tevStageBlock.Count != 0)
             {
-                writer.Write(padString[i]);
+                // Write tev stage offset
+                WriteOffset(writer, 0x5C);
+
+                // Write tev stage block
+                foreach (TevStage stage in m_tevStageBlock)
+                    stage.Write(writer);
             }
 
-            // Write dither offset
-            WriteOffset(writer, 0x7C);
+            //Pad32(writer);
 
-            // Write dither block
-            foreach (bool bol in m_ditherBlock)
-                writer.Write(bol);
-
-            for (int i = 0; i < 4 - m_ditherBlock.Count; i++)
+            if (m_swapModeBlock.Count != 0)
             {
-                writer.Write(padString[i]);
+                // Write swap mode offset
+                WriteOffset(writer, 0x60);
+
+                // Write tev swap mode block
+                foreach (TevSwapMode mode in m_swapModeBlock)
+                    mode.Write(writer);
+            }
+
+            //Pad32(writer);
+
+            if (m_swapTableBlock.Count != 0)
+            {
+                // Write swap table offset
+                WriteOffset(writer, 0x64);
+
+                // Write tev swap table block
+                foreach (TevSwapModeTable table in m_swapTableBlock)
+                    table.Write(writer);
+            }
+
+            //Pad32(writer);
+
+            if (m_fogBlock.Count != 0)
+            {
+                // Write fog offset
+                WriteOffset(writer, 0x68);
+
+                // Write fog block
+                foreach (Fog fg in m_fogBlock)
+                    fg.Write(writer);
+            }
+
+            //Pad32(writer);
+
+            if (m_alphaCompBlock.Count != 0)
+            {
+                // Write alpha compare offset
+                WriteOffset(writer, 0x6C);
+
+                // Write alpha compare block
+                foreach (AlphaCompare alph in m_alphaCompBlock)
+                    alph.Write(writer);
+            }
+
+            //Pad32(writer);
+
+            if (m_blendModeBlock.Count != 0)
+            {
+                // Write blend mode offset
+                WriteOffset(writer, 0x70);
+
+                // Write blend mode block
+                foreach (BlendMode mode in m_blendModeBlock)
+                    mode.Write(writer);
+            }
+
+            //Pad32(writer);
+
+            if (m_zModeBlock.Count != 0)
+            {
+                // Write z mode offset
+                WriteOffset(writer, 0x74);
+
+                // Write zmode block
+                foreach (ZMode mode in m_zModeBlock)
+                    mode.Write(writer);
+            }
+
+            //Pad32(writer);
+
+            if (m_zCompLocBlock.Count != 0)
+            {
+                // Write z comp loc offset
+                WriteOffset(writer, 0x78);
+
+                // Write zcomploc block
+                foreach (bool bol in m_zCompLocBlock)
+                    writer.Write(bol);
+
+                for (int i = 0; i < 4 - m_zCompLocBlock.Count; i++)
+                {
+                    writer.Write(padString[i]);
+                }
+            }
+
+            if (m_ditherBlock.Count != 0)
+            {
+                // Write dither offset
+                WriteOffset(writer, 0x7C);
+
+                // Write dither block
+                foreach (bool bol in m_ditherBlock)
+                    writer.Write(bol);
+
+                for (int i = 0; i < 4 - m_ditherBlock.Count; i++)
+                {
+                    writer.Write(padString[i]);
+                }
             }
 
             WriteOffset(writer, 0x80);
@@ -537,11 +593,11 @@ namespace BMDExporter_1
                 if (!m_zModeBlock.Contains(mat.ZMode))
                     m_zModeBlock.Add(mat.ZMode);
                 // Z comp loc
-                if (!m_zCompLocBlock.Contains(mat.ZCompLoc))
-                    m_zCompLocBlock.Add(mat.ZCompLoc);
+                m_zCompLocBlock.Add(false);
+                m_zCompLocBlock.Add(true);
                 // Dither
-                if (!m_ditherBlock.Contains(mat.Dither))
-                    m_ditherBlock.Add(mat.Dither);
+                m_ditherBlock.Add(false);
+                m_ditherBlock.Add(true);
             }
         }
         /// <summary>
@@ -553,6 +609,13 @@ namespace BMDExporter_1
             writer.Write((byte)(col.G * 255f));
             writer.Write((byte)(col.B * 255f));
             writer.Write((byte)(col.A * 255f));
+        }
+        private void WriteShortColor(EndianBinaryWriter writer, Color col)
+        {
+            writer.Write((short)(col.R * 255f));
+            writer.Write((short)(col.G * 255f));
+            writer.Write((short)(col.B * 255f));
+            writer.Write((short)(col.A * 255f));
         }
         /// <summary>
         /// Outputs the specified material to the stream.

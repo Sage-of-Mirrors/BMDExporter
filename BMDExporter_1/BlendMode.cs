@@ -23,7 +23,14 @@ namespace BMDExporter_1
 
         public BlendMode()
         {
+        }
 
+        public BlendMode(GXBlendMode type, GXBlendModeControl srcFact, GXBlendModeControl destFact, GXLogicOp op)
+        {
+            Type = type;
+            SourceFact = srcFact;
+            DestinationFact = destFact;
+            Operation = op;
         }
 
         public void Write(EndianBinaryWriter writer)

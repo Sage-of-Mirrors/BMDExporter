@@ -31,6 +31,8 @@ namespace BMDExporter_1
             ScaleS = 1.0f;
             ScaleT = 1.0f;
 
+            Unknown0 = .5f;
+
             PreMatrix.Column0 = new Vector4(1, 0, 0, 0);
             PreMatrix.Column1 = new Vector4(0, 1, 0, 0);
             PreMatrix.Column2 = new Vector4(0, 0, 1, 0);

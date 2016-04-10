@@ -22,7 +22,13 @@ namespace BMDExporter_1
 
         public ZMode()
         {
+        }
 
+        public ZMode(bool enabled, GXCompareType func, bool updateEnabled)
+        {
+            Enable = enabled;
+            Function = func;
+            UpdateEnable = updateEnabled;
         }
 
         public void Write(EndianBinaryWriter writer)

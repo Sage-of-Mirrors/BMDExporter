@@ -24,6 +24,20 @@ namespace BMDExporter_1
             Table = new ushort[10];
         }
 
+        public Fog(byte type, bool enable, ushort center, float startz, float endz, float nearz, float farz, Color col)
+        {
+            Type = type;
+            Enable = enable;
+            Center = center;
+            StartZ = startz;
+            EndZ = endz;
+            NearZ = nearz;
+            FarZ = farz;
+            Color = col;
+
+            Table = new ushort[10];
+        }
+
         public void Write(EndianBinaryWriter writer)
         {
             writer.Write(Type);

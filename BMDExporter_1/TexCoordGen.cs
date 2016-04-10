@@ -20,6 +20,13 @@ namespace BMDExporter_1
             TexMatrixSource = GXTexMatrix.TexMtx0;
         }
 
+        public TexCoordGen(GXTexGenType type, GXTexGenSrc src, GXTexMatrix matrix)
+        {
+            Type = type;
+            Source = src;
+            TexMatrixSource = matrix;
+        }
+
         public void Write(EndianBinaryWriter writer)
         {
             writer.Write((byte)Type);

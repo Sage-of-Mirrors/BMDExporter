@@ -18,6 +18,12 @@ namespace BMDExporter_1
             Scale = Vector3.One;
         }
 
+        public NBTScale(byte unk1, Vector3 scale)
+        {
+            Unknown1 = unk1;
+            Scale = scale;
+        }
+
         public void Write(EndianBinaryWriter writer)
         {
             writer.Write(Unknown1);

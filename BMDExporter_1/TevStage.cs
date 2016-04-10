@@ -32,6 +32,27 @@ namespace BMDExporter_1
             AlphaIn = new GXCombineAlphaInput[4];
         }
 
+        public TevStage(GXCombineColorInput[] colInput, GXTevOp colOp, GXTevBias colBias, GXTevScale colScale, bool colClamp, byte colRegID,
+            GXCombineAlphaInput[] alphIn, GXTevOp alphOp, GXTevBias alphBias, GXTevScale alphScale, bool alphClamp, byte alphRegID)
+        {
+            ColorIn = colInput;
+            ColorOp = colOp;
+            ColorBias = colBias;
+            ColorScale = colScale;
+            ColorClamp = colClamp;
+            ColorRegId = colRegID;
+
+            AlphaIn = alphIn;
+            AlphaOp = alphOp;
+            AlphaBias = alphBias;
+            AlphaScale = alphScale;
+            AlphaClamp = alphClamp;
+            AlphaRegId = alphRegID;
+
+            Unknown0 = 0xFF;
+            Unknown1 = 0xFF;
+        }
+
         public void Write(EndianBinaryWriter writer)
         {
             writer.Write(Unknown0);

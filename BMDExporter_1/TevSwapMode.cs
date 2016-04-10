@@ -14,7 +14,12 @@ namespace BMDExporter_1
 
         public TevSwapMode()
         {
+        }
 
+        public TevSwapMode(byte ras, byte tex)
+        {
+            RasSel = ras;
+            TexSel = tex;
         }
 
         public void Write(EndianBinaryWriter writer)

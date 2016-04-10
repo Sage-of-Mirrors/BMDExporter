@@ -22,7 +22,15 @@ namespace BMDExporter_1
 
         public AlphaCompare()
         {
+        }
 
+        public AlphaCompare(GXCompareType com0, byte ref0, GXAlphaOp op, GXCompareType com1, byte ref2)
+        {
+            Comp0 = com0;
+            Reference0 = ref0;
+            Operation = op;
+            Comp1 = com1;
+            Reference1 = ref2;
         }
 
         public void Write(EndianBinaryWriter writer)

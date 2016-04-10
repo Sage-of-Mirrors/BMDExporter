@@ -15,7 +15,13 @@ namespace BMDExporter_1
 
         public TevOrder()
         {
+        }
 
+        public TevOrder(GXTexCoordSlot slot, byte texMap, GXColorChannelId chanID)
+        {
+            TexCoordId = slot;
+            TexMap = texMap;
+            ChannelId = chanID;
         }
 
         public void Write(EndianBinaryWriter writer)

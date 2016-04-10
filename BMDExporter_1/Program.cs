@@ -36,7 +36,7 @@ namespace BMDExporter_1
 
         static void Main(string[] args)
         {
-            using (StreamReader reader = new StreamReader(@"C:\Program Files (x86)\SZS Tools\TestCube\TestCube.obj"))
+            using (StreamReader reader = new StreamReader(@"C:\Program Files (x86)\SZS Tools\TestCube2\untitled.obj"))
             {
                 Batch curBatch = null;
                 Packet curPack = null;
@@ -87,7 +87,7 @@ namespace BMDExporter_1
                             curBatch.SetName(decompLine[1]);
                             break;
                         case "mtllib":
-                            m_materialReader = new StreamReader(Path.GetDirectoryName(@"C:\Program Files (x86)\SZS Tools\TestCube\TestCube.obj") + @"\" + decompLine[1]);
+                            m_materialReader = new StreamReader(Path.GetDirectoryName(@"C:\Program Files (x86)\SZS Tools\TestCube2\TestCube.obj") + @"\" + decompLine[1]);
                             break;
                         case "usemtl":
                             if (m_materialReader == null)
@@ -96,7 +96,7 @@ namespace BMDExporter_1
                                 continue;
                             }
 
-                            curBatch.SetMaterial(new Material(decompLine[1], m_materialReader, Path.GetDirectoryName(@"C:\Program Files (x86)\SZS Tools\TestCube\TestCube.obj")));
+                            curBatch.SetMaterial(new Material(decompLine[1], m_materialReader, Path.GetDirectoryName(@"C:\Program Files (x86)\SZS Tools\TestCube2\untitled.obj")));
                             MatContainer.Materials.Add(curBatch.Material);
                             for (int i = 0; i < 8; i++)
                             {
@@ -575,11 +575,13 @@ namespace BMDExporter_1
             foreach (BinaryTextureImage tex in m_textures)
                 tex.WriteHeader(writer);
 
-            int imageDataOffset = (int)writer.BaseStream.Length - 0x20;
+            //int imageDataOffset = (int)writer.BaseStream.Length - (m_textures.Count * 0x20);
 
             // Write image data offsets and image data
             for (int i = 0; i < m_textures.Count; i++)
             {
+                int curHeaderOffset = 0x20 + (i * 0x20);
+                int imageDataOffset = (int)writer.BaseStream.Length - curHeaderOffset;
                 // 0x20 is the TEX1 header size, 0x0C is the offset to paletteDataOffset,
                 // i * 0x20 is the current header
                 writer.Seek(0x20 + 0x0C + (i * 0x20), 0);
@@ -588,10 +590,11 @@ namespace BMDExporter_1
                 // 0x20 is the TEX1 header size, 0x1C is the offset to the imageDataOffset,
                 // i * 0x20 is the current header
                 writer.Seek(0x20 + 0x1C + (i * 0x20), 0);
-                writer.Write((int)writer.BaseStream.Length - 0x20);
+                writer.Write((int)imageDataOffset);
 
                 // Write actual data
                 writer.Seek((int)writer.BaseStream.Length, 0);
+                //imageDataOffset = (int)writer.BaseStream.Length - 0x20;
                 writer.Write(m_textures[i].GetData());
             }
 
