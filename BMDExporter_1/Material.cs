@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.IO;
+using DmitryBrant.ImageFormats;
 
 namespace BMDExporter_1
 {
@@ -168,19 +169,40 @@ namespace BMDExporter_1
                         MaterialColors[0] = new Color(Convert.ToSingle(decomp[1]), Convert.ToSingle(decomp[2]), Convert.ToSingle(decomp[3]), 1);
                         break;
                     case "map_Kd":
+                        Bitmap bmp = null;
+                        string texPath = "";
+                        string texName = "";
+
+                        // If the name is rooted, we need to extract the path.
                         if (System.IO.Path.IsPathRooted(decomp[1]))
                         {
-                            string texPath = line.Substring(7);
-                            string[] test = texPath.Split('\\');
-                            Bitmap bmp = new Bitmap(texPath);
-                            SetTexture(new BinaryTextureImage(test[test.Length - 1], bmp));
+                            texPath = line.Substring(7);
+                            string[] splitPathForName = texPath.Split('\\');
+                            texName = splitPathForName[splitPathForName.Length - 1];
+                        }
+                        // Otherwise, we need to take the file name and create a path for it.
+                        else
+                        {
+                            texPath = sourceFolder + @"\" + decomp[1];
+                            texName = decomp[1];
+                        }
+
+                        // Test for which type we're loading
+                        if (texPath.EndsWith(".tga"))
+                        {
+                            bmp = TgaReader.Load(texPath);
+                        }
+                        else if (texPath.EndsWith(".png"))
+                        {
+                            bmp = new Bitmap(texPath);
                         }
                         else
                         {
-                            string fullTexPath = sourceFolder + @"\" + decomp[1];
-                            Bitmap bmp = new Bitmap(fullTexPath);
-                            SetTexture(new BinaryTextureImage(decomp[1], bmp));
+                            Console.WriteLine("Unknown texture format!");
+                            return;
                         }
+
+                        SetTexture(new BinaryTextureImage(texName, bmp));
                         break;
                     case "newmtl":
                         return;
