@@ -157,10 +157,10 @@ namespace BMDExporter_1
         {
             while (!source.EndOfStream)
             {
-                string line = source.ReadLine();
+                string line = source.ReadLine().Trim();
                 string[] decomp = line.Split(' ');
 
-                switch (decomp[0])
+                switch (decomp[0].Trim())
                 {
                     case "Ka":
                         AmbientColors[0] = new Color(Convert.ToSingle(decomp[1]), Convert.ToSingle(decomp[2]), Convert.ToSingle(decomp[3]), 1);

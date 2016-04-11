@@ -31,15 +31,32 @@ namespace BMDExporter_1
         static StreamReader m_materialReader = null;
 
         const string padString = "This is padding data to align.";
+        static string FileName;
 
         static Mat3Container MatContainer = new Mat3Container();
 
         static void Main(string[] args)
         {
-            using (StreamReader reader = new StreamReader(@"C:\Program Files (x86)\SZS Tools\TestCube2\untitled.obj"))
+            //args[0] = @"C:\Program Files (x86)\SZS Tools\TestCube2\untitled.obj";
+            //if (args.Length == 0)
+                //return;
+
+            //FileName = args[0];
+            FileName = @"C:\Users\Dylan\Documents\BMDExporter\BMDExporter_1\bin\Debug\links_slide_of_fun.obj";
+
+            if (FileName.EndsWith(".obj"))
             {
-                Batch curBatch = null;
-                Packet curPack = null;
+                using (StreamReader reader = new StreamReader(FileName))
+                {
+                    LoadOBJ(reader);
+                }
+            }
+            /*
+            using (StreamReader reader = new StreamReader(args[0]))
+            {
+                Batch curBatch = new Batch();
+                curBatch.SetName("test");
+                Packet curPack = new Packet();
                 BoundingBox box = null;
                 List<Vector3> localVerts = new List<Vector3>();
 
@@ -71,6 +88,7 @@ namespace BMDExporter_1
                             curPack.AddTriangle(decompLine);
                             break;
                         case "o":
+                        case "g":
                             if (curBatch != null)
                             {
                                 box = new BoundingBox(localVerts);
@@ -87,7 +105,7 @@ namespace BMDExporter_1
                             curBatch.SetName(decompLine[1]);
                             break;
                         case "mtllib":
-                            m_materialReader = new StreamReader(Path.GetDirectoryName(@"C:\Program Files (x86)\SZS Tools\TestCube2\TestCube.obj") + @"\" + decompLine[1]);
+                            m_materialReader = new StreamReader(Path.GetDirectoryName(args[0]) + @"\" + decompLine[1]);
                             break;
                         case "usemtl":
                             if (m_materialReader == null)
@@ -96,7 +114,7 @@ namespace BMDExporter_1
                                 continue;
                             }
 
-                            curBatch.SetMaterial(new Material(decompLine[1], m_materialReader, Path.GetDirectoryName(@"C:\Program Files (x86)\SZS Tools\TestCube2\untitled.obj")));
+                            curBatch.SetMaterial(new Material(decompLine[1], m_materialReader, Path.GetDirectoryName(args[0])));
                             MatContainer.Materials.Add(curBatch.Material);
                             for (int i = 0; i < 8; i++)
                             {
@@ -116,7 +134,7 @@ namespace BMDExporter_1
                 m_totalAttribs.Add(AttributeType.NullAttr);
 
                 m_batches.Add(curBatch);
-            }
+            }*/
 
             MemoryStream inf1 = new MemoryStream();
             EndianBinaryWriter inf1Writer = new EndianBinaryWriter(inf1, Endian.Big);
@@ -150,21 +168,144 @@ namespace BMDExporter_1
             EndianBinaryWriter tex1Writer = new EndianBinaryWriter(tex1, Endian.Big);
             WriteTex1(tex1Writer);
 
-            FileStream testJnt = new FileStream(@"C:\Program Files (x86)\SZS Tools\mattest.bmd", FileMode.Create);
-            EndianBinaryWriter testWriter = new EndianBinaryWriter(testJnt, Endian.Big);
+            string outputPath = Path.GetDirectoryName(FileName) + @"\" + "model.bmd";
 
-            WriteHeader(testWriter);
-            testWriter.Write(inf1.ToArray());
-            testWriter.Write(vtx1.ToArray());
-            testWriter.Write(evp1.ToArray());
-            testWriter.Write(drw1.ToArray());
-            testWriter.Write(jnt1.ToArray());
-            testWriter.Write(shp1.ToArray());
-            testWriter.Write(mat3.ToArray());
-            testWriter.Write(tex1.ToArray());
+            using (FileStream testJnt = new FileStream(outputPath, FileMode.Create))
+            {
+                EndianBinaryWriter testWriter = new EndianBinaryWriter(testJnt, Endian.Big);
 
-            testWriter.BaseStream.Seek(0x8, 0);
-            testWriter.Write((int)testWriter.BaseStream.Length);
+                WriteHeader(testWriter);
+                testWriter.Write(inf1.ToArray());
+                testWriter.Write(vtx1.ToArray());
+                testWriter.Write(evp1.ToArray());
+                testWriter.Write(drw1.ToArray());
+                testWriter.Write(jnt1.ToArray());
+                testWriter.Write(shp1.ToArray());
+                testWriter.Write(mat3.ToArray());
+                testWriter.Write(tex1.ToArray());
+
+                testWriter.BaseStream.Seek(0x8, 0);
+                testWriter.Write((int)testWriter.BaseStream.Length);
+            }
+        }
+ 
+        private static void LoadOBJ(StreamReader reader)
+        {
+            Batch curBatch = null;
+            //curBatch.SetName("test");
+            List<List<short>> localFaceIndexesList = new List<List<short>>();
+            List<AttributeType> localAttribs = new List<AttributeType>();
+
+            while(!reader.EndOfStream)
+            {
+                string line = reader.ReadLine();
+                string[] parsedLine = line.Split(' ');
+
+                switch (parsedLine[0])
+                {
+                    // Vertex attributes
+                    case "v":
+                        m_vertexes.Add(ParseVec3(parsedLine));
+                        break;
+                    case "vt":
+                        m_texCoords.Add(ParseVec2(parsedLine));
+                        if (!m_totalAttribs.Contains(AttributeType.Tex0))
+                            m_totalAttribs.Add(AttributeType.Tex0);
+                        if (!localAttribs.Contains(AttributeType.Tex0))
+                            localAttribs.Add(AttributeType.Tex0);
+                        break;
+                    case "vn":
+                        m_normals.Add(ParseVec3(parsedLine));
+                        if (!localAttribs.Contains(AttributeType.Normal))
+                            localAttribs.Add(AttributeType.Normal);
+                        break;
+                    case "f":
+                        List<List<short>> test = new List<List<short>>();
+                        for (int blu = 1; blu < 4; blu++)
+                        {
+                            List<short> locIndexes = new List<short>();
+                            string[] indexes = parsedLine[blu].Split('/');
+                            for (int i = 0; i < indexes.Length; i++)
+                            {
+                                locIndexes.Add((short)(Convert.ToInt16(indexes[i]) - 1));
+                            }
+                            curBatch.localVerts.Add(m_vertexes[locIndexes[0]]);
+                            test.Add(locIndexes);
+                        }
+                        List<short> temp = new List<short>(test[0]);
+                        test[0] = test[2];
+                        test[2] = temp;
+                        localFaceIndexesList.AddRange(test.ToArray());
+                        break;
+                    case "usemtl":
+                        #region Start new batch
+                        if (curBatch != null)
+                        {
+                            Packet pac = new Packet();
+                            for (int i = 0; i < localFaceIndexesList.Count; i++)
+                            {
+                                pac.m_triIndexes.AddRange(localFaceIndexesList[i].ToArray());
+                            }
+                            pac.m_triCount = localFaceIndexesList.Count / localFaceIndexesList[0].Count;
+                            localFaceIndexesList.Clear();
+                            curBatch.MakeBoundingBox();
+                            curBatch.AddPacket(pac);
+                            curBatch.m_activeAttribs.AddRange(localAttribs);
+                            localAttribs.Clear();
+                            localAttribs.Add(AttributeType.Position);
+                        }
+                        else
+                        {
+                            curBatch = new Batch();
+                            curBatch.SetName(parsedLine[1]);
+                            curBatch.CreateBone();
+                        }
+                        #endregion
+                        #region Get material
+                        if (m_materialReader == null)
+                        {
+                            Console.Write("Material reader was null!");
+                            continue;
+                        }
+
+                        curBatch.SetMaterial(new Material(parsedLine[1], m_materialReader, Path.GetDirectoryName(FileName)));
+                        MatContainer.Materials.Add(curBatch.Material);
+                        for (int i = 0; i < 8; i++)
+                        {
+                            if (curBatch.Material.Textures[i] != null)
+                                m_textures.Add(curBatch.Material.Textures[i]);
+                        }
+                        #endregion
+                        if (curBatch.localVerts.Count != 0)
+                        {
+                            m_batches.Add(curBatch);
+                            curBatch = new Batch();
+                            curBatch.SetName(parsedLine[1]);
+                        }
+                        break;
+                    case "mtllib":
+                        m_materialReader = new StreamReader(Path.GetDirectoryName(FileName) + @"\" + parsedLine[1]);
+                        break;
+                }
+            }
+
+            Packet finalPac = new Packet();
+            for (int i = 0; i < localFaceIndexesList.Count; i++)
+            {
+                finalPac.m_triIndexes.AddRange(localFaceIndexesList[i].ToArray());
+            }
+            localFaceIndexesList.Clear();
+            curBatch.MakeBoundingBox();
+            curBatch.AddPacket(finalPac);
+            curBatch.m_activeAttribs.AddRange(localAttribs);
+            localAttribs.Clear();
+            m_batches.Add(curBatch);
+            m_totalAttribs.Add(AttributeType.NullAttr);
+
+            for (int i = 0; i < m_batches.Count; i++)
+            {
+                m_batches[i].Material = MatContainer.Materials[i];
+            }
         }
 
         private static void WriteHeader(EndianBinaryWriter writer)
@@ -673,15 +814,23 @@ namespace BMDExporter_1
         {
             Vector3 vec = new Vector3();
 
-            try
+            for (int i = 1; i < vertLine.Length; i++)
             {
-                vec.X = Convert.ToSingle(vertLine[1]);
-                vec.Y = Convert.ToSingle(vertLine[2]);
-                vec.Z = Convert.ToSingle(vertLine[3]);
-            }
-            catch
-            {
-                Console.WriteLine("Couldn't parse vector 3.");
+                if (vertLine[i] != "")
+                {
+                    try
+                    {
+                        vec.X = Convert.ToSingle(vertLine[i]);
+                        vec.Y = Convert.ToSingle(vertLine[i + 1]);
+                        vec.Z = Convert.ToSingle(vertLine[i + 2]);
+
+                        return vec;
+                    }
+                    catch
+                    {
+                        Console.WriteLine("Couldn't parse vector 3.");
+                    }
+                }
             }
 
             return vec;
@@ -694,7 +843,7 @@ namespace BMDExporter_1
             try
             {
                 uv.X = Convert.ToSingle(uvLine[1]);
-                uv.Y = Convert.ToSingle(uvLine[2]);
+                uv.Y = 1.0f - Convert.ToSingle(uvLine[2]);
             }
             catch
             {

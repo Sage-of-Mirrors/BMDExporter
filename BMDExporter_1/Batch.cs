@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using GameFormatReader.Common;
+using OpenTK;
 
 namespace BMDExporter_1
 {
@@ -47,12 +48,20 @@ namespace BMDExporter_1
         BoundingBox m_boundingBox;
 
         List<Packet> m_packets;
-        List<AttributeType> m_activeAttribs;
+        public List<AttributeType> m_activeAttribs;
+        public List<Vector3> localVerts;
 
         public Batch()
         {
             m_packets = new List<Packet>();
             m_activeAttribs = new List<AttributeType>() { AttributeType.Position };
+            localVerts = new List<Vector3>();
+        }
+
+        public void MakeBoundingBox()
+        {
+            m_boundingBox = new BoundingBox(localVerts);
+            CreateBone();
         }
 
         public void AddPacket(Packet pack)

@@ -57,9 +57,9 @@ namespace BMDExporter_1
                     minZ = vec.Z;
             }
 
-            Maximum = new Vector3(maxX/2, maxY, maxZ);
+            Maximum = new Vector3(maxX, maxY, maxZ);
 
-            Minimum = new Vector3(minX/2, minY, minZ);
+            Minimum = new Vector3(minX, minY, minZ);
             #endregion
 
             #region Center
@@ -70,8 +70,8 @@ namespace BMDExporter_1
             Center.Z = (Maximum.Z + Minimum.Z) / 2;
             #endregion
 
-            Maximum = Maximum - Center;
-            Minimum = Minimum - Center;
+            //Maximum = Maximum - Center;
+            //Minimum = Minimum - Center;
 
             #region Bounding Sphere Radius
 

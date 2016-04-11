@@ -9,8 +9,8 @@ namespace BMDExporter_1
 {
     class Packet
     {
-        int m_triCount;
-        List<short> m_triIndexes;
+        public int m_triCount;
+        public List<short> m_triIndexes;
 
         public Packet()
         {
