@@ -10,6 +10,8 @@ namespace BMDExporter_1
     class Packet
     {
         public int m_triCount;
+        public int shortCount;
+        public int numVertexes;
         public List<short> m_triIndexes;
 
         public Packet()
@@ -52,7 +54,7 @@ namespace BMDExporter_1
         public void WritePacket(EndianBinaryWriter writer)
         {
             writer.Write((byte)0x90);
-            writer.Write((short)(m_triIndexes.Count / 2));
+            writer.Write((short)numVertexes);
 
             foreach (short sho in m_triIndexes)
                 writer.Write(sho);
@@ -60,7 +62,7 @@ namespace BMDExporter_1
 
         public void WriteSize(EndianBinaryWriter writer)
         {
-            int size = m_triIndexes.Count * 2 + 3;
+            int size = (numVertexes * shortCount * 2) + 3;
             writer.Write(size);
             writer.Write((int)0);
         }
@@ -68,7 +70,7 @@ namespace BMDExporter_1
 
         public short GetSize()
         {
-            return (short)(m_triIndexes.Count * 2 + 3);
+            return (short)((numVertexes * shortCount * 2) + 3);
         }
     }
 }

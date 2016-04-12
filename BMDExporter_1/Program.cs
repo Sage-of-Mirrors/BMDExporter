@@ -41,8 +41,8 @@ namespace BMDExporter_1
             //if (args.Length == 0)
                 //return;
 
-            //FileName = args[0];
-            FileName = @"C:\Users\Dylan\Documents\BMDExporter\BMDExporter_1\bin\Debug\links_slide_of_fun.obj";
+            FileName = args[0];
+            //FileName = @"C:\Users\Dylan\Documents\BMDExporter\BMDExporter_1\bin\Debug\links_slide_of_fun.obj";
 
             if (FileName.EndsWith(".obj"))
             {
@@ -216,6 +216,8 @@ namespace BMDExporter_1
                         break;
                     case "vn":
                         m_normals.Add(ParseVec3(parsedLine));
+                        if (!m_totalAttribs.Contains(AttributeType.Normal))
+                            m_totalAttribs.Add(AttributeType.Normal);
                         if (!localAttribs.Contains(AttributeType.Normal))
                             localAttribs.Add(AttributeType.Normal);
                         break;
@@ -228,6 +230,12 @@ namespace BMDExporter_1
                             for (int i = 0; i < indexes.Length; i++)
                             {
                                 locIndexes.Add((short)(Convert.ToInt16(indexes[i]) - 1));
+                            }
+                            if (indexes.Length == 3)
+                            {
+                                short texcoord = locIndexes[1];
+                                locIndexes[1] = locIndexes[2];
+                                locIndexes[2] = texcoord;
                             }
                             curBatch.localVerts.Add(m_vertexes[locIndexes[0]]);
                             test.Add(locIndexes);
@@ -246,7 +254,9 @@ namespace BMDExporter_1
                             {
                                 pac.m_triIndexes.AddRange(localFaceIndexesList[i].ToArray());
                             }
+                            pac.shortCount = localFaceIndexesList[0].Count;
                             pac.m_triCount = localFaceIndexesList.Count / localFaceIndexesList[0].Count;
+                            pac.numVertexes = localFaceIndexesList.Count;
                             localFaceIndexesList.Clear();
                             curBatch.MakeBoundingBox();
                             curBatch.AddPacket(pac);
@@ -294,6 +304,9 @@ namespace BMDExporter_1
             {
                 finalPac.m_triIndexes.AddRange(localFaceIndexesList[i].ToArray());
             }
+            finalPac.shortCount = localFaceIndexesList[0].Count;
+            finalPac.m_triCount = localFaceIndexesList.Count / localFaceIndexesList[0].Count;
+            finalPac.numVertexes = localFaceIndexesList.Count;
             localFaceIndexesList.Clear();
             curBatch.MakeBoundingBox();
             curBatch.AddPacket(finalPac);
@@ -399,18 +412,18 @@ namespace BMDExporter_1
                     writer.Write((short)-1);
                 }
 
-                else if (attrib == AttributeType.Tex0)
-                {
-                    writer.Write((int)AttributeType.Tex0);
-                    writer.Write((int)1);
-                    writer.Write((int)4);
-                    writer.Write((short)0x00FF);
-                    writer.Write((short)-1);
-                }
-
                 else if (attrib == AttributeType.Normal)
                 {
                     writer.Write((int)AttributeType.Normal);
+                    writer.Write((int)0);
+                    writer.Write((int)3);
+                    writer.Write((short)0x0EFF);
+                    writer.Write((short)-1);
+                }
+
+                else if (attrib == AttributeType.Tex0)
+                {
+                    writer.Write((int)AttributeType.Tex0);
                     writer.Write((int)1);
                     writer.Write((int)4);
                     writer.Write((short)0x00FF);
@@ -443,29 +456,36 @@ namespace BMDExporter_1
 
             Pad32(writer);
 
-            writer.BaseStream.Seek(0x20, 0);
-            writer.Write((int)writer.BaseStream.Length);
-
-            writer.BaseStream.Seek(writer.BaseStream.Length, 0);
-
-            if (m_totalAttribs.Contains(AttributeType.Tex0))
+            if (m_totalAttribs.Contains(AttributeType.Normal))
             {
-                foreach (Vector2 vec in m_texCoords)
+                writer.BaseStream.Seek(0x10, 0);
+                writer.Write((int)writer.BaseStream.Length);
+
+                writer.BaseStream.Seek(writer.BaseStream.Length, 0);
+
+                float scaleFactor = (float)Math.Pow(0.5, 0xE);
+
+                foreach (Vector3 vec in m_normals)
                 {
-                    writer.Write(vec.X);
-                    writer.Write(vec.Y);
+                    writer.Write((short)(vec.X / scaleFactor));
+                    writer.Write((short)(vec.Y / scaleFactor));
+                    writer.Write((short)(vec.Z / scaleFactor));
                 }
             }
 
             Pad32(writer);
 
-            if (m_totalAttribs.Contains(AttributeType.Normal))
+            if (m_totalAttribs.Contains(AttributeType.Tex0))
             {
-                foreach (Vector3 vec in m_normals)
+                writer.BaseStream.Seek(0x20, 0);
+                writer.Write((int)writer.BaseStream.Length);
+
+                writer.BaseStream.Seek(writer.BaseStream.Length, 0);
+
+                foreach (Vector2 vec in m_texCoords)
                 {
                     writer.Write(vec.X);
                     writer.Write(vec.Y);
-                    writer.Write(vec.Z);
                 }
             }
 
