@@ -6,6 +6,8 @@ using System.Threading.Tasks;
 using System.IO;
 using OpenTK;
 using GameFormatReader.Common;
+using grendgine_collada;
+using Collada141;
 
 namespace BMDExporter_1
 {
@@ -41,8 +43,8 @@ namespace BMDExporter_1
             //if (args.Length == 0)
                 //return;
 
-            FileName = args[0];
-            //FileName = @"C:\Users\Dylan\Documents\BMDExporter\BMDExporter_1\bin\Debug\links_slide_of_fun.obj";
+            //FileName = args[0];
+            FileName = @"C:\Program Files (x86)\SZS Tools\bdl\testobj.obj";
 
             if (FileName.EndsWith(".obj"))
             {
@@ -51,90 +53,16 @@ namespace BMDExporter_1
                     LoadOBJ(reader);
                 }
             }
-            /*
-            using (StreamReader reader = new StreamReader(args[0]))
+            else if (FileName.EndsWith(".dae"))
             {
-                Batch curBatch = new Batch();
-                curBatch.SetName("test");
-                Packet curPack = new Packet();
-                BoundingBox box = null;
-                List<Vector3> localVerts = new List<Vector3>();
-
-                while (!reader.EndOfStream)
-                {
-                    string line = reader.ReadLine();
-                    string[] decompLine = line.Split(' ');
-
-                    switch(decompLine[0])
-                    {
-                        case "v":
-                            localVerts.Add(ParseVec3(decompLine));
-                            break;
-                        case "vt":
-                            if (!curBatch.HasAttribute(AttributeType.Tex0))
-                                curBatch.AddAttribute(AttributeType.Tex0);
-                            if (!m_totalAttribs.Contains(AttributeType.Tex0))
-                                m_totalAttribs.Add(AttributeType.Tex0);
-                            m_texCoords.Add(ParseVec2(decompLine));
-                            break;
-                        case "vn":
-                            if (!curBatch.HasAttribute(AttributeType.Normal))
-                                curBatch.AddAttribute(AttributeType.Normal);
-                            if (!m_totalAttribs.Contains(AttributeType.Normal))
-                                m_totalAttribs.Add(AttributeType.Normal);
-                            m_normals.Add(ParseVec3(decompLine));
-                            break;
-                        case "f":
-                            curPack.AddTriangle(decompLine);
-                            break;
-                        case "o":
-                        case "g":
-                            if (curBatch != null)
-                            {
-                                box = new BoundingBox(localVerts);
-                                curBatch.SetBoundingBox(box);
-                                curBatch.CreateBone();
-                                curBatch.AddPacket(curPack);
-                                m_vertexes.AddRange(localVerts);
-                                localVerts.Clear();
-
-                                m_batches.Add(curBatch);
-                            }
-                            curBatch = new Batch();
-                            curPack = new Packet();
-                            curBatch.SetName(decompLine[1]);
-                            break;
-                        case "mtllib":
-                            m_materialReader = new StreamReader(Path.GetDirectoryName(args[0]) + @"\" + decompLine[1]);
-                            break;
-                        case "usemtl":
-                            if (m_materialReader == null)
-                            {
-                                Console.Write("Material reader was null!");
-                                continue;
-                            }
-
-                            curBatch.SetMaterial(new Material(decompLine[1], m_materialReader, Path.GetDirectoryName(args[0])));
-                            MatContainer.Materials.Add(curBatch.Material);
-                            for (int i = 0; i < 8; i++)
-                            {
-                                if (curBatch.Material.Textures[i] != null)
-                                    m_textures.Add(curBatch.Material.Textures[i]);
-                            }
-                            break;
-                    }
-                }
-
-                box = new BoundingBox(localVerts);
-                curBatch.SetBoundingBox(box);
-                curBatch.CreateBone();
-                curBatch.AddPacket(curPack);
-                m_vertexes.AddRange(localVerts);
-                localVerts.Clear();
-                m_totalAttribs.Add(AttributeType.NullAttr);
-
-                m_batches.Add(curBatch);
-            }*/
+                LoadDAE(Grendgine_Collada.Grendgine_Load_File(FileName));
+            }
+            else
+            {
+                Console.WriteLine("File type is unsupported!");
+                Console.ReadLine();
+                return;
+            }
 
             MemoryStream inf1 = new MemoryStream();
             EndianBinaryWriter inf1Writer = new EndianBinaryWriter(inf1, Endian.Big);
@@ -321,6 +249,11 @@ namespace BMDExporter_1
             }
         }
 
+        private static void LoadDAE(Grendgine_Collada source)
+        {
+            COLLADA col = COLLADA.Load(FileName);
+        }
+
         private static void WriteHeader(EndianBinaryWriter writer)
         {
             writer.Write("J3D2bmd3".ToCharArray());
@@ -335,107 +268,107 @@ namespace BMDExporter_1
         private static void WriteInf1(EndianBinaryWriter writer)
         {
             writer.Write("INF1".ToCharArray());
-            writer.Write((int)0);
-            writer.Write((short)0);
+            writer.Write((uint)0);
+            writer.Write((ushort)0);
             writer.Write((short)-1);
-            writer.Write((int)m_batches.Count);
-            writer.Write((int)m_vertexes.Count);
-            writer.Write((int)0x18);
+            writer.Write((uint)m_batches.Count);
+            writer.Write((uint)m_vertexes.Count);
+            writer.Write((uint)0x18);
 
-            writer.Write((short)HierarchyDataTypes.Joint);
-            writer.Write((short)0);
-            writer.Write((short)HierarchyDataTypes.NewNode);
-            writer.Write((short)0);
+            writer.Write((ushort)HierarchyDataTypes.Joint);
+            writer.Write((ushort)0);
+            writer.Write((ushort)HierarchyDataTypes.NewNode);
+            writer.Write((ushort)0);
 
             for (int i = 0; i < m_batches.Count; i++)
             {
-                writer.Write((short)HierarchyDataTypes.Joint);
-                writer.Write((short)(i + 1));
+                writer.Write((ushort)HierarchyDataTypes.Joint);
+                writer.Write((ushort)(i + 1));
 
-                writer.Write((short)HierarchyDataTypes.NewNode);
-                writer.Write((short)0);
+                writer.Write((ushort)HierarchyDataTypes.NewNode);
+                writer.Write((ushort)0);
 
-                writer.Write((short)HierarchyDataTypes.Material);
-                writer.Write((short)i);
+                writer.Write((ushort)HierarchyDataTypes.Material);
+                writer.Write((ushort)i);
 
-                writer.Write((short)HierarchyDataTypes.NewNode);
-                writer.Write((short)0);
+                writer.Write((ushort)HierarchyDataTypes.NewNode);
+                writer.Write((ushort)0);
 
-                writer.Write((short)HierarchyDataTypes.Shape);
-                writer.Write((short)i);
+                writer.Write((ushort)HierarchyDataTypes.Shape);
+                writer.Write((ushort)i);
 
-                writer.Write((short)HierarchyDataTypes.EndNode);
-                writer.Write((short)0);
+                writer.Write((ushort)HierarchyDataTypes.EndNode);
+                writer.Write((ushort)0);
 
-                writer.Write((short)HierarchyDataTypes.EndNode);
-                writer.Write((short)0);
+                writer.Write((ushort)HierarchyDataTypes.EndNode);
+                writer.Write((ushort)0);
 
-                writer.Write((short)HierarchyDataTypes.EndNode);
-                writer.Write((short)0);
+                writer.Write((ushort)HierarchyDataTypes.EndNode);
+                writer.Write((ushort)0);
 
                 if (i != m_batches.Count - 1)
                 {
-                    writer.Write((short)HierarchyDataTypes.NewNode);
-                    writer.Write((short)0);
+                    writer.Write((ushort)HierarchyDataTypes.NewNode);
+                    writer.Write((ushort)0);
                 }
             }
 
-            writer.Write((short)HierarchyDataTypes.Finish);
-            writer.Write((short)0);
+            writer.Write((ushort)HierarchyDataTypes.Finish);
+            writer.Write((ushort)0);
 
             Pad32(writer);
 
             writer.BaseStream.Seek(0x4, 0);
-            writer.Write((int)writer.BaseStream.Length);
+            writer.Write((uint)writer.BaseStream.Length);
         }
 
         private static void WriteVtx1(EndianBinaryWriter writer)
         {
             writer.Write("VTX1".ToCharArray());
-            writer.Write((int)0);
-            writer.Write((int)0x40);
-            writer.Write((int)0);
+            writer.Write((uint)0);
+            writer.Write((uint)0x40);
+            writer.Write((uint)0);
 
             for (int i = 0; i < 12; i++)
             {
-                writer.Write((int)0);
+                writer.Write((uint)0);
             }
 
             foreach (AttributeType attrib in m_totalAttribs)
             {
                 if (attrib == AttributeType.Position)
                 {
-                    writer.Write((int)AttributeType.Position);
-                    writer.Write((int)1);
-                    writer.Write((int)4);
-                    writer.Write((short)0x00FF);
+                    writer.Write((uint)AttributeType.Position);
+                    writer.Write((uint)1);
+                    writer.Write((uint)4);
+                    writer.Write((ushort)0x00FF);
                     writer.Write((short)-1);
                 }
 
                 else if (attrib == AttributeType.Normal)
                 {
-                    writer.Write((int)AttributeType.Normal);
-                    writer.Write((int)0);
-                    writer.Write((int)3);
-                    writer.Write((short)0x0EFF);
+                    writer.Write((uint)AttributeType.Normal);
+                    writer.Write((uint)0);
+                    writer.Write((uint)3);
+                    writer.Write((ushort)0x0EFF);
                     writer.Write((short)-1);
                 }
 
                 else if (attrib == AttributeType.Tex0)
                 {
-                    writer.Write((int)AttributeType.Tex0);
-                    writer.Write((int)1);
-                    writer.Write((int)4);
-                    writer.Write((short)0x00FF);
+                    writer.Write((uint)AttributeType.Tex0);
+                    writer.Write((uint)1);
+                    writer.Write((uint)4);
+                    writer.Write((ushort)0x00FF);
                     writer.Write((short)-1);
                 }
 
                 else if (attrib == AttributeType.NullAttr)
                 {
-                    writer.Write((int)AttributeType.NullAttr);
-                    writer.Write((int)1);
-                    writer.Write((int)0);
-                    writer.Write((short)0x00FF);
+                    writer.Write((uint)AttributeType.NullAttr);
+                    writer.Write((uint)1);
+                    writer.Write((uint)0);
+                    writer.Write((ushort)0x00FF);
                     writer.Write((short)-1);
                 }
             }
@@ -443,7 +376,7 @@ namespace BMDExporter_1
             Pad32(writer);
 
             writer.BaseStream.Seek(0xC, 0);
-            writer.Write((int)writer.BaseStream.Length);
+            writer.Write((uint)writer.BaseStream.Length);
 
             writer.BaseStream.Seek(writer.BaseStream.Length, 0);
 
@@ -459,7 +392,7 @@ namespace BMDExporter_1
             if (m_totalAttribs.Contains(AttributeType.Normal))
             {
                 writer.BaseStream.Seek(0x10, 0);
-                writer.Write((int)writer.BaseStream.Length);
+                writer.Write((uint)writer.BaseStream.Length);
 
                 writer.BaseStream.Seek(writer.BaseStream.Length, 0);
 
@@ -467,9 +400,9 @@ namespace BMDExporter_1
 
                 foreach (Vector3 vec in m_normals)
                 {
-                    writer.Write((short)(vec.X / scaleFactor));
-                    writer.Write((short)(vec.Y / scaleFactor));
-                    writer.Write((short)(vec.Z / scaleFactor));
+                    writer.Write((ushort)(vec.X / scaleFactor));
+                    writer.Write((ushort)(vec.Y / scaleFactor));
+                    writer.Write((ushort)(vec.Z / scaleFactor));
                 }
             }
 
@@ -478,7 +411,7 @@ namespace BMDExporter_1
             if (m_totalAttribs.Contains(AttributeType.Tex0))
             {
                 writer.BaseStream.Seek(0x20, 0);
-                writer.Write((int)writer.BaseStream.Length);
+                writer.Write((uint)writer.BaseStream.Length);
 
                 writer.BaseStream.Seek(writer.BaseStream.Length, 0);
 
@@ -492,14 +425,14 @@ namespace BMDExporter_1
             Pad32(writer);
 
             writer.BaseStream.Seek(4, 0);
-            writer.Write((int)writer.BaseStream.Length);
+            writer.Write((uint)writer.BaseStream.Length);
         }
 
         private static void WriteEvp1(EndianBinaryWriter writer)
         {
             writer.Write("EVP1".ToCharArray());
-            writer.Write((int)0x20);
-            writer.Write((short)0);
+            writer.Write((uint)0x20);
+            writer.Write((ushort)0);
             writer.Write((short)-1);
 
             for (int i = 0; i < 16; i++)
@@ -513,8 +446,8 @@ namespace BMDExporter_1
         private static void WriteDrw1(EndianBinaryWriter writer)
         {
             writer.Write("DRW1".ToCharArray());
-            writer.Write((int)0);
-            writer.Write((short)m_batches.Count);
+            writer.Write((uint)0);
+            writer.Write((ushort)m_batches.Count);
             writer.Write((short)-1);
             writer.Write(0x14);
             writer.Write(0x0);
@@ -527,30 +460,30 @@ namespace BMDExporter_1
             Pad32(writer);
 
             writer.BaseStream.Seek(0x10, 0);
-            writer.Write((int)writer.BaseStream.Length);
+            writer.Write((uint)writer.BaseStream.Length);
 
             writer.BaseStream.Seek(writer.BaseStream.Length, 0);
 
             for (int i = 0; i < m_batches.Count; i++)
             {
-                writer.Write((short)(i + 1));
+                writer.Write((ushort)(i + 1));
             }
 
             Pad32(writer);
 
             writer.BaseStream.Seek(4, 0);
-            writer.Write((int)writer.BaseStream.Length);
+            writer.Write((uint)writer.BaseStream.Length);
         }
 
         private static void WriteJnt1(EndianBinaryWriter writer)
         {
             writer.Write("JNT1".ToCharArray());
-            writer.Write((int)0);
-            writer.Write((short)(m_batches.Count + 1));
+            writer.Write((uint)0);
+            writer.Write((ushort)(m_batches.Count + 1));
             writer.Write((short)-1);
-            writer.Write((int)0x18);
-            writer.Write((int)((m_batches.Count + 1) * 0x40));
-            writer.Write((int)0); // Placeholder for offset to the string table
+            writer.Write((uint)0x18);
+            writer.Write((uint)((m_batches.Count + 1) * 0x40));
+            writer.Write((uint)0); // Placeholder for offset to the string table
 
             Bone root = new Bone(new BoundingBox(), "world_root");
 
@@ -560,37 +493,37 @@ namespace BMDExporter_1
                 bat.WriteBone(writer);
 
             writer.BaseStream.Seek(0x10, 0);
-            writer.Write((int)writer.BaseStream.Length);
+            writer.Write((uint)writer.BaseStream.Length);
 
             writer.BaseStream.Seek(writer.BaseStream.Length, 0);
 
             for (int i = 0; i < m_batches.Count + 1; i++)
             {
-                writer.Write((short)i);
+                writer.Write((ushort)i);
             }
 
             Pad32(writer);
 
             writer.BaseStream.Seek(0x14, 0);
-            writer.Write((int)writer.BaseStream.Length);
+            writer.Write((uint)writer.BaseStream.Length);
 
             writer.BaseStream.Seek(writer.BaseStream.Length, 0);
-            writer.Write((short)(m_batches.Count + 1));
+            writer.Write((ushort)(m_batches.Count + 1));
             writer.Write((short)-1);
 
             writer.BaseStream.Seek(writer.BaseStream.Length, 0);
 
-            short stringOffset = (short)(4 + ((m_batches.Count + 1) * 4));
+            ushort stringOffset = (ushort)(4 + ((m_batches.Count + 1) * 4));
 
             writer.Write(HashName("world_root"));
             writer.Write(stringOffset);
-            stringOffset += (short)("world_root".Length + 1);
+            stringOffset += (ushort)("world_root".Length + 1);
 
             foreach (Batch bat in m_batches)
             {
                 writer.Write(HashName(bat.GetName()));
                 writer.Write(stringOffset);
-                stringOffset += (short)(bat.GetName().Length + 1);
+                stringOffset += (ushort)(bat.GetName().Length + 1);
             }
 
             writer.Write("world_root".ToCharArray());
@@ -612,13 +545,13 @@ namespace BMDExporter_1
         private static void WriteShp1(EndianBinaryWriter writer)
         {
             writer.Write("SHP1".ToCharArray());
-            writer.Write((int)0);
-            writer.Write((short)m_batches.Count);
+            writer.Write((uint)0);
+            writer.Write((ushort)m_batches.Count);
             writer.Write((short)-1);
-            writer.Write((int)0x2C);
+            writer.Write((uint)0x2C);
 
             for (int i = 0; i < 7; i++)
-                writer.Write((int)0);
+                writer.Write((uint)0);
 
             for (int i = 0; i < m_batches.Count; i++)
             {
@@ -628,76 +561,76 @@ namespace BMDExporter_1
             //Pad32(writer);
 
             writer.BaseStream.Seek(0x10, 0);
-            writer.Write((int)writer.BaseStream.Length);
+            writer.Write((uint)writer.BaseStream.Length);
 
             writer.BaseStream.Seek(writer.BaseStream.Length, 0);
 
             for (int i = 0; i < m_batches.Count; i++)
             {
-                writer.Write((short)i);
+                writer.Write((ushort)i);
             }
 
             Pad32(writer);
 
             writer.BaseStream.Seek(0x18, 0);
-            writer.Write((int)writer.BaseStream.Length);
+            writer.Write((uint)writer.BaseStream.Length);
 
             writer.BaseStream.Seek(writer.BaseStream.Length, 0);
 
             foreach (AttributeType type in m_totalAttribs)
             {
-                writer.Write((int)type);
-                writer.Write((int)3);
+                writer.Write((uint)type);
+                writer.Write((uint)3);
             }
 
             Pad32(writer);
 
             writer.BaseStream.Seek(0x1C, 0);
-            writer.Write((int)writer.BaseStream.Length);
+            writer.Write((uint)writer.BaseStream.Length);
 
             writer.BaseStream.Seek(writer.BaseStream.Length, 0);
 
             for (int i = 0; i < m_batches.Count; i++)
             {
-                writer.Write((short)i);
+                writer.Write((ushort)i);
             }
 
             Pad32(writer);
 
             writer.BaseStream.Seek(0x20, 0);
-            writer.Write((int)writer.BaseStream.Length);
+            writer.Write((uint)writer.BaseStream.Length);
 
             writer.BaseStream.Seek(writer.BaseStream.Length, 0);
 
-            List<short> offsets = new List<short>() { 0 };
+            List<ushort> offsets = new List<ushort>() { 0 };
 
-            short curOffset = (short)writer.BaseStream.Position;
+            ushort curOffset = (ushort)writer.BaseStream.Position;
 
             foreach (Batch bat in m_batches)
             {
                 bat.WritePacket(writer);
 
-                offsets.Add((short)(writer.BaseStream.Position - curOffset));
+                offsets.Add((ushort)(writer.BaseStream.Position - curOffset));
             }
 
             Pad32(writer);
 
             writer.BaseStream.Seek(0x24, 0);
-            writer.Write((int)writer.BaseStream.Length);
+            writer.Write((uint)writer.BaseStream.Length);
 
             writer.BaseStream.Seek(writer.BaseStream.Length, 0);
 
             for (int i = 0; i < m_batches.Count; i++)
             {
-                writer.Write((short)0);
-                writer.Write((short)1);
-                writer.Write((int)i);
+                writer.Write((ushort)0);
+                writer.Write((ushort)1);
+                writer.Write((uint)i);
             }
 
             //Pad32(writer);
 
             writer.BaseStream.Seek(0x28, 0);
-            writer.Write((int)writer.BaseStream.Length);
+            writer.Write((uint)writer.BaseStream.Length);
 
             writer.BaseStream.Seek(writer.BaseStream.Length, 0);
 
@@ -705,14 +638,14 @@ namespace BMDExporter_1
             {
                 short packetSize = m_batches[i].GetPacketSize(0);
 
-                writer.Write((int)packetSize);
-                writer.Write((int)offsets[i]);
+                writer.Write((uint)packetSize);
+                writer.Write((uint)offsets[i]);
             }
 
             Pad32(writer);
 
             writer.BaseStream.Seek(0x4, 0);
-            writer.Write((int)writer.BaseStream.Length);
+            writer.Write((uint)writer.BaseStream.Length);
         }
 
         private static void WriteMat3(EndianBinaryWriter writer)
@@ -724,11 +657,11 @@ namespace BMDExporter_1
         {
             // Write TEX1 header
             writer.Write("TEX1".ToCharArray());
-            writer.Write((int)0);
-            writer.Write((short)m_textures.Count);
+            writer.Write((uint)0);
+            writer.Write((ushort)m_textures.Count);
             writer.Write((short)-1);
-            writer.Write((int)0x20);
-            writer.Write((int)0);
+            writer.Write((uint)0x20);
+            writer.Write((uint)0);
 
             Pad32(writer);
 
@@ -742,16 +675,16 @@ namespace BMDExporter_1
             for (int i = 0; i < m_textures.Count; i++)
             {
                 int curHeaderOffset = 0x20 + (i * 0x20);
-                int imageDataOffset = (int)writer.BaseStream.Length - curHeaderOffset;
+                uint imageDataOffset = (uint)(writer.BaseStream.Length - curHeaderOffset);
                 // 0x20 is the TEX1 header size, 0x0C is the offset to paletteDataOffset,
                 // i * 0x20 is the current header
                 writer.Seek(0x20 + 0x0C + (i * 0x20), 0);
-                writer.Write((int)(imageDataOffset - (i* 20)));
+                writer.Write((uint)(imageDataOffset - (i* 20)));
 
                 // 0x20 is the TEX1 header size, 0x1C is the offset to the imageDataOffset,
                 // i * 0x20 is the current header
                 writer.Seek(0x20 + 0x1C + (i * 0x20), 0);
-                writer.Write((int)imageDataOffset);
+                writer.Write((uint)imageDataOffset);
 
                 // Write actual data
                 writer.Seek((int)writer.BaseStream.Length, 0);
@@ -760,22 +693,22 @@ namespace BMDExporter_1
             }
 
             writer.Seek(0x10, 0);
-            writer.Write((int)writer.BaseStream.Length);
+            writer.Write((uint)writer.BaseStream.Length);
             writer.Seek((int)writer.BaseStream.Length, 0);
 
             // Write string table
-            writer.Write((short)m_textures.Count);
+            writer.Write((ushort)m_textures.Count);
             writer.Write((short)-1);
 
-            short stringOffset = (short)(4 + ((m_textures.Count) * 4));
+            ushort stringOffset = (ushort)(4 + ((m_textures.Count) * 4));
 
             // Hash and string offset
             foreach (BinaryTextureImage tex in m_textures)
             {
-                writer.Write((short)HashName(tex.Name));
+                writer.Write((ushort)HashName(tex.Name));
                 writer.Write(stringOffset);
 
-                stringOffset += (short)(tex.Name.Length + 1);
+                stringOffset += (ushort)(tex.Name.Length + 1);
             }
 
             // String data with null terminators
@@ -788,7 +721,7 @@ namespace BMDExporter_1
             Pad32(writer);
 
             writer.Seek(4, 0);
-            writer.Write((int)writer.BaseStream.Length);
+            writer.Write((uint)writer.BaseStream.Length);
         }
 
         private static ushort HashName(string name)

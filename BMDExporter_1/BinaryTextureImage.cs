@@ -134,7 +134,7 @@ namespace BMDExporter_1
         public BinaryTextureImage(string name, Bitmap bmp)
         {
             Name = name;
-            Format = TextureFormats.RGBA32;
+            Format = TextureFormats.CMPR;
             AlphaSetting = 0;
             Width = (ushort)bmp.Width;
             Height = (ushort)bmp.Height;
@@ -151,7 +151,7 @@ namespace BMDExporter_1
             LodBias = 0;
 
             m_imagePalette = null;
-            m_rgbaImageData = BinaryTextureImage.EncodeData(bmp, Width, Height, TextureFormats.RGBA32);
+            m_rgbaImageData = BinaryTextureImage.EncodeData(bmp, Width, Height, TextureFormats.CMPR);
         }
 
         // headerStart seems to be chunkStart + 0x20 and I don't know why.
@@ -911,6 +911,8 @@ namespace BMDExporter_1
                     return EncodeI4(bmp, width, height);
                 case TextureFormats.RGBA32:
                     return EncodeArgb32(bmp, width, height);
+                case TextureFormats.CMPR:
+                    return EncodeCMPR(bmp, width, height);
                 default:
                     return new byte[0];
             }
@@ -1007,6 +1009,162 @@ namespace BMDExporter_1
             }
 
             return encodedImage.ToArray();
+        }
+
+        private static byte[] EncodeCMPR(Bitmap bmp, uint width, uint height)
+        {
+            List<byte> encodedData = new List<byte>();
+
+            // Y blocks of texture
+            for (int y = 0; y < height; y += 4)
+            {
+                // X blocks of texture
+                for (int x = 0; x < width; x += 4)
+                {
+                    ushort Color0; // Darkest
+                    ushort Color1; // Brightest
+                    ushort Color2; // Interpolated dark
+                    ushort Color3; // Interpolated bright
+
+                    int lowestColor = int.MaxValue;
+                    int highestColor = int.MinValue;
+
+                    // Get colors to find extremes
+                    // Block Y
+                    for (int blockY = 0; blockY < 4; blockY++)
+                    {
+                        // Block X pos
+                        for (int blockX = 0; blockX < 4; blockX++)
+                        {
+                            int valueCompare = bmp.GetPixel(x + blockX, y + blockY).ToArgb();
+
+                            if (valueCompare > highestColor)
+                                highestColor = valueCompare;
+                            if (valueCompare < lowestColor)
+                                lowestColor = valueCompare;
+                        }
+                    }
+
+                    System.Drawing.Color lowestAsColor = System.Drawing.Color.FromArgb(lowestColor);
+                    System.Drawing.Color highestAsColor = System.Drawing.Color.FromArgb(highestColor);
+
+                    Color0 = RGB8ToRGB565(lowestAsColor);
+                    Color1 = RGB8ToRGB565(highestAsColor);
+
+                    encodedData.AddRange(BitConverter.GetBytes(Color0));
+
+                    // Swap endian of the short we just added
+                    //byte endianSwapHold = encodedData[0];
+                    //encodedData[0] = encodedData[1];
+                    //encodedData[1] = endianSwapHold;
+
+                    encodedData.AddRange(BitConverter.GetBytes(Color1));
+
+                    // Swap endian of the short we just added
+                    //endianSwapHold = encodedData[2];
+                    //encodedData[2] = encodedData[3];
+                    //encodedData[3] = endianSwapHold;
+
+                    int col2R = (2 * lowestAsColor.R + highestAsColor.R) / 3;
+                    int col2G = (2 * lowestAsColor.G + highestAsColor.G) / 3;
+                    int col2B = (2 * lowestAsColor.B + highestAsColor.B) / 3;
+
+                    int col3R = (lowestAsColor.R + 2 * highestAsColor.R) / 3;
+                    int col3G = (lowestAsColor.G + 2 * highestAsColor.G) / 3;
+                    int col3B = (lowestAsColor.B + 2 * highestAsColor.B) / 3;
+
+                    Color2 = RGB8ToRGB565(System.Drawing.Color.FromArgb(col2R, col2G, col2B));
+                    Color3 = RGB8ToRGB565(System.Drawing.Color.FromArgb(col3R, col3G, col3B));
+
+                    ushort color0Midpoint = (ushort)((Color0 + Color2) / 2);
+                    ushort color1Midpoint = (ushort)((Color1 + Color3) / 2);
+                    ushort color23Midpoint = (ushort)((Color2 + Color3) / 2);
+
+                    int packedPixels = 0;
+                    int shiftVal = 0;
+
+                    // Assign pixels to colors
+                    // Block Y
+                    for (int blockY = 0; blockY < 4; ++blockY)
+                    {
+                        // Block X pos
+                        for (int blockX = 0; blockX < 4; ++blockX)
+                        {
+                            ushort colorVal = RGB8ToRGB565(bmp.GetPixel(x + blockX, y + blockY));
+
+                            if ((colorVal >= Color0) && (colorVal < color0Midpoint))
+                            {
+                                packedPixels = packedPixels | (0 << shiftVal);
+                            }
+
+                            if ((colorVal <= Color1) && (colorVal > color1Midpoint))
+                            {
+                                packedPixels = packedPixels | (1 << shiftVal);
+                            }
+
+                            if ((colorVal >= color0Midpoint) && (colorVal < Color2))
+                            {
+                                packedPixels = packedPixels | (2 << shiftVal);
+                            }
+
+                            if ((colorVal >= Color2) && (colorVal < color23Midpoint))
+                            {
+                                packedPixels = packedPixels | (2 << shiftVal);
+                            }
+
+                            if ((colorVal >= color23Midpoint) && (colorVal < Color3))
+                            {
+                                packedPixels = packedPixels | (3 << shiftVal);
+                            }
+
+                            if ((colorVal >= Color3) && (colorVal < color1Midpoint))
+                            {
+                                packedPixels = packedPixels | (3 << shiftVal);
+                            }
+                            else
+                            {
+                            }
+
+                            shiftVal += 2;
+                        }
+                    }
+
+                    encodedData.AddRange(BitConverter.GetBytes(packedPixels));
+                }
+            }
+
+            byte[] buffer = new byte[encodedData.Count];
+            int listIndex = 0;
+
+            // Y blocks
+            for (int y = 0; y < height / 4; y += 2)
+            {
+                // X blocks
+                for (int x = 0; x < width / 4; x += 2)
+                {
+                    // Current Y block
+                    for (int dy = 0; dy < 2; ++dy)
+                    {
+                        // Current X block
+                        for (int dx = 0; dx < 2; ++dx)
+                        {
+                            if (4 * (x + dx) < width && 4 * (y + dy) < height)
+                            {
+                                //Buffer.BlockCopy(fileData, 0, buffer, (int)(8 * ((y + dy) * width / 4 + x + dx)), 8);
+                                encodedData.CopyTo(listIndex, buffer, (int)(8 * ((y + dy) * width / 4 + x + dx)), 8);
+                                listIndex += 8;
+                            }
+                        }
+                    }
+                }
+            }
+
+            return buffer;
+        }
+
+        private static ushort RGB8ToRGB565(System.Drawing.Color color)
+        {
+            return (ushort)((color.R >> 3) << 11 | (color.G >> 2) << 5 | (color.B >> 3));
         }
         #endregion
 

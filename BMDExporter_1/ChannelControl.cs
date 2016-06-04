@@ -19,11 +19,11 @@ namespace BMDExporter_1
         public ChannelControl()
         {
             Enable = false;
-            MaterialSrcColor = GXColorSrc.Vertex;
+            MaterialSrcColor = GXColorSrc.Register;
             LitMask = GXLightId.None;
             DiffuseFunction = GXDiffuseFn.None;
             AttenuationFunction = GXAttenuationFn.None;
-            AmbientSrcColor = GXColorSrc.Vertex;
+            AmbientSrcColor = GXColorSrc.Register;
         }
 
         public ChannelControl(bool enable, GXColorSrc matSrc, GXLightId lit, GXDiffuseFn dif, GXAttenuationFn att, GXColorSrc amb)
