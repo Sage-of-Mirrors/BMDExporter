@@ -5,6 +5,7 @@ using System.Drawing.Imaging;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Collections.Generic;
+using Chadsoft.CTools.Image;
 
 namespace BMDExporter_1
 {
@@ -986,8 +987,8 @@ namespace BMDExporter_1
 
                             System.Drawing.Color pixelColor = bmp.GetPixel(srcXPixel, srcYPixel);
 
-                            encodedImage.Add(pixelColor.A);
-                            encodedImage.Add(pixelColor.R);
+                            encodedImage.Add(pixelColor.B);
+                            encodedImage.Add(pixelColor.G);
                         }
                     }
 
@@ -1001,8 +1002,8 @@ namespace BMDExporter_1
 
                             System.Drawing.Color pixelColor = bmp.GetPixel(srcXPixel, srcYPixel);
 
-                            encodedImage.Add(pixelColor.G);
-                            encodedImage.Add(pixelColor.B);
+                            encodedImage.Add(pixelColor.A);
+                            encodedImage.Add(pixelColor.R);
                         }
                     }
                 }
@@ -1013,6 +1014,8 @@ namespace BMDExporter_1
 
         private static byte[] EncodeCMPR(Bitmap bmp, uint width, uint height)
         {
+            return ImageDataFormat.Cmpr.ConvertTo(GetData(bmp), (int)width, (int)height, null);
+
             List<byte> encodedData = new List<byte>();
 
             // Y blocks of texture
@@ -1132,39 +1135,26 @@ namespace BMDExporter_1
                     encodedData.AddRange(BitConverter.GetBytes(packedPixels));
                 }
             }
-
-            byte[] buffer = new byte[encodedData.Count];
-            int listIndex = 0;
-
-            // Y blocks
-            for (int y = 0; y < height / 4; y += 2)
-            {
-                // X blocks
-                for (int x = 0; x < width / 4; x += 2)
-                {
-                    // Current Y block
-                    for (int dy = 0; dy < 2; ++dy)
-                    {
-                        // Current X block
-                        for (int dx = 0; dx < 2; ++dx)
-                        {
-                            if (4 * (x + dx) < width && 4 * (y + dy) < height)
-                            {
-                                //Buffer.BlockCopy(fileData, 0, buffer, (int)(8 * ((y + dy) * width / 4 + x + dx)), 8);
-                                encodedData.CopyTo(listIndex, buffer, (int)(8 * ((y + dy) * width / 4 + x + dx)), 8);
-                                listIndex += 8;
-                            }
-                        }
-                    }
-                }
-            }
-
-            return buffer;
         }
 
         private static ushort RGB8ToRGB565(System.Drawing.Color color)
         {
             return (ushort)((color.R >> 3) << 11 | (color.G >> 2) << 5 | (color.B >> 3));
+        }
+
+        public static byte[] GetData(Bitmap bitmap)
+        {
+            BitmapData bitmapData;
+            byte[] data;
+
+            bitmapData = bitmap.LockBits(new Rectangle(0, 0, bitmap.Width, bitmap.Height), ImageLockMode.ReadOnly, PixelFormat.Format32bppArgb);
+            data = new byte[bitmapData.Height * bitmapData.Stride];
+
+            Marshal.Copy(bitmapData.Scan0, data, 0, data.Length);
+
+            bitmap.UnlockBits(bitmapData);
+
+            return data;
         }
         #endregion
 

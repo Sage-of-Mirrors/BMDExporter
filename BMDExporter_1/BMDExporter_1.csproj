@@ -65,6 +65,7 @@
     <Compile Include="Color.cs" />
     <Compile Include="Fog.cs" />
     <Compile Include="GXEnums.cs" />
+    <Compile Include="ImageDataFormat.cs" />
     <Compile Include="IndirectTexturing.cs" />
     <Compile Include="IndTevOrder.cs" />
     <Compile Include="IndTexMatrix.cs" />
