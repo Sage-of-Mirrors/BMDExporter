@@ -32,7 +32,7 @@ namespace BMDExporter_1
 
         static StreamReader m_materialReader = null;
 
-        const string padString = "This is padding data to align.";
+        const string padString = "This is padding data to align  .";
         static string FileName;
 
         static Mat3Container MatContainer = new Mat3Container();
@@ -44,7 +44,7 @@ namespace BMDExporter_1
                 //return;
 
             //FileName = args[0];
-            FileName = @"C:\Program Files (x86)\SZS Tools\bdl\testobj.obj";
+            FileName = @"C:\Program Files (x86)\SZS Tools\TexTestModel\redfence.obj";
 
             if (FileName.EndsWith(".obj"))
             {

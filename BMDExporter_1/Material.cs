@@ -202,7 +202,7 @@ namespace BMDExporter_1
                             return;
                         }
 
-                        SetTexture(new BinaryTextureImage(texName, bmp));
+                        SetTexture(texName, bmp);
                         break;
                     case "newmtl":
                         return;
@@ -210,8 +210,38 @@ namespace BMDExporter_1
             }
         }
 
-        public void SetTexture(BinaryTextureImage tex)
+        public void SetTexture(string texName, Bitmap bmp)
         {
+            BinaryTextureImage tex = null;
+
+            // Check to see if we need an alpha channel in our texture
+            bool hasAlpha = HasAlpha(bmp);
+
+            // If so, we'll use RGB565
+            if (hasAlpha)
+            {
+                tex = new BinaryTextureImage(texName, bmp, BinaryTextureImage.TextureFormats.RGBA32);
+
+                // This sets the alpha compare settings so that alpha is set correctly.
+                // It won't allow translucency, just a sharp transparent/opaque dichotemy.
+                AlphCompare.Comp0 = GXCompareType.GEqual;
+                AlphCompare.Comp1 = GXCompareType.LEqual;
+                AlphCompare.Operation = GXAlphaOp.And;
+                AlphCompare.Reference0 = 0x80;
+                AlphCompare.Reference1 = 0xFF;
+
+                // We'll default to showing the texture on both sides for now. Maybe it'll be changable in the future
+                CullMode = GXCullMode.None;
+
+                // Make sure z compare happens *after* texture look up so we can take the alpha compare results into account
+                ZCompLoc = false;
+            }
+            // Otherwise, we'll use CMPR to save space
+            else
+            {
+                tex = new BinaryTextureImage(texName, bmp, BinaryTextureImage.TextureFormats.CMPR);
+            }
+
             // Search for an open texture slot and if there is one, put the texture there
             for (int i = 0; i < 8; i++)
             {
@@ -225,6 +255,20 @@ namespace BMDExporter_1
             TexCoord1Gens[0] = new TexCoordGen((GXTexGenType)1, (GXTexGenSrc)4, (GXTexMatrix)0x1e);
             TexCoord1Gens[1] = new TexCoordGen((GXTexGenType)1, (GXTexGenSrc)4, (GXTexMatrix)0x3C);
             TexMatrix1[0] = new TexMatrix();
+        }
+
+        private bool HasAlpha(Bitmap source)
+        {
+            for (int y = 0; y < source.Height; y++)
+            {
+                for (int x = 0; x < source.Width; x++)
+                {
+                    if (source.GetPixel(x, y).A != 255)
+                        return true;
+                }
+            }
+
+            return false;
         }
     }
 }

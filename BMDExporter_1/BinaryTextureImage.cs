@@ -132,11 +132,14 @@ namespace BMDExporter_1
         private Palette m_imagePalette;
         private byte[] m_rgbaImageData;
 
-        public BinaryTextureImage(string name, Bitmap bmp)
+        public BinaryTextureImage(string name, Bitmap bmp, TextureFormats format)
         {
             Name = name;
-            Format = TextureFormats.CMPR;
-            AlphaSetting = 0;
+            Format = format;
+            if (format == TextureFormats.CMPR)
+                AlphaSetting = 0;
+            else
+                AlphaSetting = 0xCC;
             Width = (ushort)bmp.Width;
             Height = (ushort)bmp.Height;
             WrapS = WrapModes.Repeat;
@@ -152,7 +155,7 @@ namespace BMDExporter_1
             LodBias = 0;
 
             m_imagePalette = null;
-            m_rgbaImageData = BinaryTextureImage.EncodeData(bmp, Width, Height, TextureFormats.CMPR);
+            m_rgbaImageData = BinaryTextureImage.EncodeData(bmp, bmp.Width, bmp.Height, format);
         }
 
         // headerStart seems to be chunkStart + 0x20 and I don't know why.
@@ -904,21 +907,44 @@ namespace BMDExporter_1
         #endregion
 
         #region Encoding
-        public static byte[] EncodeData(Bitmap bmp, uint width, uint height, TextureFormats format)
+        public static byte[] EncodeData(Bitmap bmp, int width, int height, TextureFormats format)
         {
+            // Thanks, Chadderz from CToolsWii!
+            byte[] imageData = GetData(bmp);
+
             switch (format)
             {
                 case TextureFormats.I4:
-                    return EncodeI4(bmp, width, height);
+                    return ImageDataFormat.I4.ConvertTo(imageData, width, height, null);
+                case TextureFormats.RGB5A3:
+                    return ImageDataFormat.RGB5A3.ConvertTo(imageData, width, height, null);
                 case TextureFormats.RGBA32:
-                    return EncodeArgb32(bmp, width, height);
+                    return ImageDataFormat.Rgba32.ConvertTo(imageData, width, height, null);
                 case TextureFormats.CMPR:
-                    return EncodeCMPR(bmp, width, height);
+                    return ImageDataFormat.Cmpr.ConvertTo(imageData, width, height, null);
                 default:
                     return new byte[0];
             }
         }
 
+        public static byte[] GetData(Bitmap bitmap)
+        {
+            BitmapData bitmapData;
+            byte[] data;
+
+            bitmapData = bitmap.LockBits(new Rectangle(0, 0, bitmap.Width, bitmap.Height), ImageLockMode.ReadOnly, PixelFormat.Format32bppArgb);
+            data = new byte[bitmapData.Height * bitmapData.Stride];
+
+            Marshal.Copy(bitmapData.Scan0, data, 0, data.Length);
+
+            bitmap.UnlockBits(bitmapData);
+
+            return data;
+        }
+
+        /*
+         * Keeping these for posterity
+         * 
         private static byte[] EncodeI4(Bitmap bmp, uint width, uint height)
         {
             List<byte> encodedImage = new List<byte>();
@@ -1141,21 +1167,7 @@ namespace BMDExporter_1
         {
             return (ushort)((color.R >> 3) << 11 | (color.G >> 2) << 5 | (color.B >> 3));
         }
-
-        public static byte[] GetData(Bitmap bitmap)
-        {
-            BitmapData bitmapData;
-            byte[] data;
-
-            bitmapData = bitmap.LockBits(new Rectangle(0, 0, bitmap.Width, bitmap.Height), ImageLockMode.ReadOnly, PixelFormat.Format32bppArgb);
-            data = new byte[bitmapData.Height * bitmapData.Stride];
-
-            Marshal.Copy(bitmapData.Scan0, data, 0, data.Length);
-
-            bitmap.UnlockBits(bitmapData);
-
-            return data;
-        }
+        */
         #endregion
 
         public override bool Equals(object obj)
